@@ -6,99 +6,51 @@
 <title>Warung Nusantara</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family:'Segoe UI',sans-serif;
-}
-
 body{
   margin:0;
-  background:url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200') center/cover fixed;
+  font-family:Segoe UI;
+  background:#111;
+  color:white;
 }
 
 h1{
   text-align:center;
-  color:#ffe7b0;
+  color:#ffdca8;
   margin-top:20px;
 }
 
-.resto-card{
-  background:rgba(255,255,255,0.15);
-  padding:15px;
-  border-radius:15px;
-  margin:10px auto;
-  width:90%;
-  max-width:500px;
-  color:white;
-  text-align:center;
-  backdrop-filter: blur(8px);
-}
-
-.overlay{
-  background:rgba(0,0,0,.65);
-  min-height:100vh;
-  padding:25px;
-}
-
 .container{
-  width:90%;
-  max-width:1200px;
-  margin:auto;
-  color:white;
-}
-
-h2{
-  text-align:center;
-  color:#ffdca8;
+  padding:20px;
 }
 
 .card{
-  background:rgba(255,248,235,.96);
-  color:#2b1e14;
-  padding:18px;
-  margin:15px 0;
-  border-radius:18px;
+  background:white;
+  color:black;
+  padding:15px;
+  margin:10px 0;
+  border-radius:10px;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px;
 }
 
 button{
   width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
+  padding:10px;
   background:#8b5e3c;
   color:white;
-  font-weight:bold;
+  border:none;
+  border-radius:8px;
   cursor:pointer;
-}
-
-button:hover{
-  background:#a06b44;
 }
 
 input,select{
   width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:1px solid #ddd;
-}
-
-img{
-  width:100%;
-  height:170px;
-  object-fit:cover;
-  border-radius:12px;
-}
-
-.status{
-  font-weight:bold;
-  color:#8b5e3c;
+  padding:10px;
+  margin:5px 0;
 }
 </style>
 </head>
@@ -107,9 +59,6 @@ img{
 
 <h1>🍽️ Warung Nusantara</h1>
 
-<div id="restoInfo" class="resto-card">Loading...</div>
-
-<div class="overlay">
 <div class="container">
 
 <h2>Menu</h2>
@@ -124,7 +73,7 @@ img{
 <div class="card">
 <h3>Keranjang</h3>
 <div id="cartBox">Kosong</div>
-<h3 id="total">Total Rp 0</h3>
+<h3 id="total">Rp 0</h3>
 <button onclick="checkout()">Kirim Pesanan</button>
 </div>
 
@@ -132,49 +81,32 @@ img{
 <div id="ordersList"></div>
 
 </div>
-</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  doc,
-  updateDoc
+getFirestore,
+collection,
+getDocs,
+addDoc,
+onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD-m7sqOLaZ8bWLZeGVPTXT-Qp1vQIycQ",
-  authDomain: "warung-nusantara-9f331.firebaseapp.com",
-  projectId: "warung-nusantara-9f331",
-  storageBucket: "warung-nusantara-9f331.firebasestorage.app",
-  messagingSenderId: "68513276988",
-  appId: "1:68513276988:web:b13b148a51ce216efecf39"
+apiKey: "XXX",
+authDomain: "XXX",
+projectId: "XXX"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let cart=[];
-let unsubscribe;
 
-/* MEJA */
-function loadMeja(){
-  let html='<option value="">Pilih Meja</option>';
-  for(let i=1;i<=20;i++){
-    html += `<option value="${i}">Meja ${i}</option>`;
-  }
-  document.getElementById("meja").innerHTML=html;
-}
-loadMeja();
-
-/* MENU */
+/* ================= MENU ================= */
 async function loadMenu(){
+
   const snap = await getDocs(collection(db,"menus"));
 
   let html="";
@@ -183,16 +115,15 @@ async function loadMenu(){
     let m=d.data();
 
     html += `
-    <div class="card">
-      <h3>${m.name}</h3>
-      <p>${m.category}</p>
-      <p>Rp ${m.price.toLocaleString("id-ID")}</p>
-      <button onclick="add('${m.name}',${m.price})">+ Pesan</button>
-    </div>
+      <div class="card">
+        <h3>${m.name}</h3>
+        <p>Rp ${m.price}</p>
+        <button onclick="add('${m.name}',${m.price})">Tambah</button>
+      </div>
     `;
   });
 
-  document.getElementById("menuList").innerHTML=html;
+  document.getElementById("menuList").innerHTML = html;
 }
 
 window.add = (name,price)=>{
@@ -209,11 +140,11 @@ function renderCart(){
     total += i.price;
   });
 
-  document.getElementById("cartBox").innerHTML=html || "Kosong";
-  document.getElementById("total").innerHTML="Total Rp "+total.toLocaleString("id-ID");
+  document.getElementById("cartBox").innerHTML = html || "Kosong";
+  document.getElementById("total").innerHTML = "Rp " + total;
 }
 
-/* CHECKOUT + CUSTOMER MASUK DATABASE */
+/* ================= CHECKOUT (CUSTOMER + ORDER) ================= */
 window.checkout = async ()=>{
 
   let nama = document.getElementById("nama").value;
@@ -221,73 +152,71 @@ window.checkout = async ()=>{
   let meja = document.getElementById("meja").value;
 
   if(cart.length===0) return alert("Keranjang kosong");
-  if(!nama || !meja) return alert("Isi data dulu");
+  if(!nama) return alert("Isi nama");
 
   let total = cart.reduce((a,b)=>a+b.price,0);
 
-  // 🔥 SIMPAN ORDER + CUSTOMER SEKALIGUS
-  const orderRef = await addDoc(collection(db,"orders"),{
-    customerName: nama,
-    phone: phone,
-    tableNumber: Number(meja),
-    status: "Pending",
-    totalPrice: total,
-    createdAt: serverTimestamp()
+  // 🔥 SIMPAN ORDER
+  await addDoc(collection(db,"orders"),{
+    customerName:nama,
+    phone:phone,
+    tableNumber:meja,
+    status:"Pending",
+    totalPrice:total,
+    createdAt:new Date()
   });
 
-  for(let i of cart){
-    await addDoc(collection(db,"orders",orderRef.id,"items"),{
-      menuName:i.name,
-      qty:1,
-      price:i.price
-    });
-  }
+  // 🔥 SIMPAN CUSTOMER (INI YANG KAMU MAU)
+  await addDoc(collection(db,"customers"),{
+    name:nama,
+    phone:phone,
+    lastOrderTotal:total,
+    createdAt:new Date()
+  });
 
   cart=[];
   renderCart();
 
-  alert("Pesanan masuk ✔");
+  alert("Pesanan & Customer tersimpan ✔");
 };
 
-/* ORDERS REALTIME */
+/* ================= ORDERS REALTIME ================= */
 function loadOrders(){
 
-  if(unsubscribe) unsubscribe();
-
-  const q = collection(db,"orders");
-
-  unsubscribe = onSnapshot(q,(snapshot)=>{
+  onSnapshot(collection(db,"orders"),(snap)=>{
 
     let html="";
 
-    snapshot.forEach((d)=>{
-
-      let o = d.data();
+    snap.forEach(d=>{
+      let o=d.data();
 
       html += `
-      <div class="card">
-        <h3>Meja ${o.tableNumber}</h3>
-        <p><b>Customer:</b> ${o.customerName}</p>
-        <p><b>Phone:</b> ${o.phone}</p>
-        <p><b>Status:</b> ${o.status}</p>
-        <p><b>Total:</b> Rp ${o.totalPrice.toLocaleString("id-ID")}</p>
-
-        <button onclick="changeStatus('${d.id}','Selesai')">
-          Tandai Selesai
-        </button>
-      </div>
+        <div class="card">
+          <b>${o.customerName}</b><br>
+          Meja: ${o.tableNumber}<br>
+          Status: ${o.status}<br>
+          Total: Rp ${o.totalPrice}
+        </div>
       `;
     });
 
     document.getElementById("ordersList").innerHTML =
-      html || "Belum ada pesanan";
+      html || "Belum ada orders";
   });
 }
 
-window.changeStatus = async(id,status)=>{
-  await updateDoc(doc(db,"orders",id),{status});
-};
+/* ================= MEJA ================= */
+function loadMeja(){
+  let html="<option value=''>Pilih Meja</option>";
 
+  for(let i=1;i<=10;i++){
+    html += `<option value="${i}">Meja ${i}</option>`;
+  }
+
+  document.getElementById("meja").innerHTML=html;
+}
+
+loadMeja();
 loadMenu();
 loadOrders();
 
