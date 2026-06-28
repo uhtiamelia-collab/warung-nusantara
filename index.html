@@ -14,12 +14,16 @@
 
 <style>
 
+*{
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
 
 body{
 
-font-family:Poppins,sans-serif;
-background:#fff0f5;
 margin:0;
+background:#fff0f5;
 color:#5a3038;
 
 }
@@ -27,13 +31,13 @@ color:#5a3038;
 
 header{
 
-background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
+background:#ffb6c1;
 padding:35px;
 text-align:center;
 color:#8b2f4d;
-border-radius:0 0 40px 40px;
 
 }
+
 
 
 .container{
@@ -41,6 +45,18 @@ border-radius:0 0 40px 40px;
 width:90%;
 max-width:1100px;
 margin:30px auto;
+
+}
+
+
+
+.card{
+
+background:white;
+padding:20px;
+border-radius:20px;
+margin:15px 0;
+box-shadow:0 5px 20px rgba(0,0,0,.1);
 
 }
 
@@ -56,19 +72,7 @@ gap:20px;
 
 
 
-.card{
-
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 5px 20px rgba(0,0,0,.1);
-margin-bottom:20px;
-
-}
-
-
-
-.card img{
+img{
 
 width:100%;
 height:200px;
@@ -79,21 +83,13 @@ border-radius:15px;
 
 
 
-h2,h3{
-
-color:#a33b5c;
-
-}
-
-
-
 button{
 
+width:100%;
+padding:12px;
 background:#e75480;
 color:white;
-border:none;
-padding:12px;
-width:100%;
+border:0;
 border-radius:15px;
 cursor:pointer;
 
@@ -109,15 +105,16 @@ background:#c2185b;
 
 
 
-input{
+input,select{
 
 width:100%;
 padding:12px;
 margin:8px 0;
 border-radius:10px;
-border:1px solid #ffc0cb;
+border:1px solid pink;
 
 }
+
 
 
 .status{
@@ -131,20 +128,19 @@ font-weight:bold;
 
 </style>
 
-
 </head>
 
 
+
 <body>
+
 
 
 <header>
 
 <h1>🍽️ Warung Nusantara</h1>
 
-<p>
-Sistem Pemesanan Digital Firestore
-</p>
+<p>Sistem Pemesanan Firestore</p>
 
 </header>
 
@@ -154,15 +150,33 @@ Sistem Pemesanan Digital Firestore
 
 
 
-<h2>Pilih Lokasi Restoran</h2>
+<h2>Pilih Restoran</h2>
 
 
-<div id="restaurantList"></div>
+<select id="restoSelect"
+onchange="pilihRestoran()">
+
+<option value="">
+-- Pilih Restoran --
+</option>
+
+
+</select>
+
+
+
+<div class="card" id="restoInfo">
+
+Belum memilih restoran
+
+</div>
 
 
 
 
-<h2>Menu Restoran</h2>
+
+
+<h2>Menu</h2>
 
 
 <div id="menuList" class="grid"></div>
@@ -171,34 +185,43 @@ Sistem Pemesanan Digital Firestore
 
 
 
-<h2>🛒 Form Pesanan</h2>
 
 
-<input id="nama" placeholder="Nama Customer">
+<h2>🛒 Pesanan</h2>
 
 
-<input id="phone" placeholder="Nomor HP">
+
+<input id="nama"
+placeholder="Nama Customer">
 
 
-<input id="meja" placeholder="Nomor Meja">
+<input id="phone"
+placeholder="Nomor HP">
+
+
+<input id="meja"
+placeholder="Nomor Meja">
+
+
 
 
 
 <div class="card">
+
 
 <h3>Keranjang</h3>
 
 
 <div id="cartBox">
 
-Keranjang kosong
+Kosong
 
 </div>
 
 
 <h3 id="total">
 
-Total : Rp 0
+Total Rp 0
 
 </h3>
 
@@ -210,10 +233,12 @@ Kirim Pesanan
 </button>
 
 
-<p id="pesanStatus" class="status"></p>
+<p id="pesanStatus"
+class="status"></p>
 
 
 </div>
+
 
 
 
@@ -227,6 +252,8 @@ Kirim Pesanan
 
 
 
+
+
 </div>
 
 
@@ -236,8 +263,8 @@ Kirim Pesanan
 
 
 
-<script type="module">
 
+<script type="module">
 
 
 import {initializeApp}
@@ -274,48 +301,42 @@ from
 
 
 
-// FIREBASE CONFIG
 
 
-const firebaseConfig = {
+const firebaseConfig={
 
 
-apiKey:
-"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
+apiKey:"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
 
+authDomain:"warung-nusantara-9f331.firebaseapp.com",
 
-authDomain:
-"warung-nusantara-9f331.firebaseapp.com",
+projectId:"warung-nusantara-9f331",
 
+storageBucket:"warung-nusantara-9f331.firebasestorage.app",
 
-projectId:
-"warung-nusantara-9f331",
+messagingSenderId:"68513276988",
 
-
-storageBucket:
-"warung-nusantara-9f331.firebasestorage.app",
-
-
-messagingSenderId:
-"68513276988",
-
-
-appId:
-"1:68513276988:web:b13b148a51ce216efecf39"
+appId:"1:68513276988:web:b13b148a51ce216efecf39"
 
 
 };
 
 
 
-const app = initializeApp(firebaseConfig);
+
+
+const app=initializeApp(firebaseConfig);
 
 
 const db=getFirestore(app);
 
 
 
+
 let restaurantId="";
+
+
+let restoranData={};
 
 
 let cart=[];
@@ -326,17 +347,16 @@ let cart=[];
 
 
 
-// ==========================
-// TAMPIL RESTORAN
-// ==========================
+// =====================
+// LOAD RESTORAN
+// =====================
+
+
+async function loadRestoran(){
 
 
 
-async function tampilRestoran(){
-
-
-
-const data = await getDocs(
+const snap=await getDocs(
 
 collection(db,"restaurants")
 
@@ -344,29 +364,96 @@ collection(db,"restaurants")
 
 
 
-let html="";
+let html=`
+
+<option value="">
+
+-- Pilih Restoran --
+
+</option>
+
+`;
 
 
 
-data.forEach((doc)=>{
+snap.forEach(doc=>{
 
 
 let r=doc.data();
 
 
 
-html += `
+restoranData[doc.id]=r;
 
 
-<div class="card">
 
+html+=`
+
+<option value="${doc.id}">
+
+${r.name || doc.id}
+
+</option>
+
+`;
+
+
+
+});
+
+
+
+document.getElementById("restoSelect").innerHTML=html;
+
+
+
+}
+
+
+
+loadRestoran();
+
+
+
+
+
+
+
+
+
+// =====================
+// PILIH RESTORAN
+// =====================
+
+
+
+window.pilihRestoran=function(){
+
+
+restaurantId=document.getElementById("restoSelect").value;
+
+
+
+let r=restoranData[restaurantId];
+
+
+
+if(!r)return;
+
+
+
+
+document.getElementById("restoInfo").innerHTML=
+
+
+
+`
 
 <h2>
 
-🍽️ ${r.name || doc.id}
+🍽️ ${r.name}
 
 </h2>
-
 
 
 <p>
@@ -389,59 +476,13 @@ html += `
 
 Status :
 
-<b>
-
-${r.status || "Buka"}
-
-</b>
+<b>${r.status || "Buka"}</b>
 
 </p>
 
 
-
-<button onclick="pilihRestoran('${doc.id}')">
-
-Lihat Menu
-
-</button>
-
-
-</div>
-
-
 `;
 
-
-
-});
-
-
-
-document.getElementById("restaurantList").innerHTML=html;
-
-
-}
-
-
-
-tampilRestoran();
-
-
-
-
-
-
-
-
-// ==========================
-// PILIH RESTORAN
-// ==========================
-
-
-window.pilihRestoran=function(id){
-
-
-restaurantId=id;
 
 
 loadMenu();
@@ -456,9 +497,11 @@ loadMenu();
 
 
 
-// ==========================
-// MENU
-// ==========================
+
+
+// =====================
+// LOAD MENU
+// =====================
 
 
 
@@ -466,7 +509,7 @@ async function loadMenu(){
 
 
 
-const data = await getDocs(
+const snap=await getDocs(
 
 collection(
 
@@ -488,24 +531,37 @@ let html="";
 
 
 
-data.forEach((doc)=>{
+snap.forEach(doc=>{
 
 
 let m=doc.data();
 
 
 
-let harga = Number(m.price || 0);
+
+let harga=
+
+Number(m.price || 0);
 
 
 
-html += `
+let gambar=
+
+m.imageUrl ||
+
+"https://via.placeholder.com/300";
+
+
+
+
+
+html+=`
 
 
 <div class="card">
 
 
-<img src="${m.imageUrl || 'https://via.placeholder.com/300'}">
+<img src="${gambar}">
 
 
 
@@ -519,7 +575,7 @@ ${m.name || "Menu"}
 
 <p>
 
-${m.category || ""}
+${m.category || "Makanan"}
 
 </p>
 
@@ -533,11 +589,20 @@ Rp ${harga.toLocaleString()}
 
 
 
-<button onclick="tambah('${m.name}',${harga})">
+<button onclick="tambahMenu(
+
+'${m.name}',
+
+${harga}
+
+)">
+
 
 + Pesan
 
+
 </button>
+
 
 
 </div>
@@ -554,6 +619,7 @@ Rp ${harga.toLocaleString()}
 document.getElementById("menuList").innerHTML=html;
 
 
+
 }
 
 
@@ -563,12 +629,14 @@ document.getElementById("menuList").innerHTML=html;
 
 
 
-// ==========================
-// TAMBAH CART
-// ==========================
 
 
-window.tambah=function(name,price){
+// =====================
+// CART
+// =====================
+
+
+window.tambahMenu=function(name,price){
 
 
 cart.push({
@@ -579,8 +647,7 @@ price
 });
 
 
-tampilCart();
-
+renderCart();
 
 
 };
@@ -589,7 +656,8 @@ tampilCart();
 
 
 
-function tampilCart(){
+
+function renderCart(){
 
 
 let html="";
@@ -598,7 +666,7 @@ let total=0;
 
 
 
-cart.forEach((x)=>{
+cart.forEach(x=>{
 
 
 html+=`
@@ -614,9 +682,7 @@ Rp ${x.price.toLocaleString()}
 `;
 
 
-
 total+=x.price;
-
 
 
 });
@@ -625,13 +691,12 @@ total+=x.price;
 
 document.getElementById("cartBox").innerHTML=
 
-html || "Keranjang kosong";
-
+html || "Kosong";
 
 
 document.getElementById("total").innerHTML=
 
-"Total : Rp "+total.toLocaleString();
+"Total Rp "+total.toLocaleString();
 
 
 
@@ -643,14 +708,15 @@ document.getElementById("total").innerHTML=
 
 
 
-// ==========================
+
+
+// =====================
 // CHECKOUT
-// ==========================
+// =====================
 
 
 
-window.checkout=async function(){
-
+window.checkout=async()=>{
 
 
 if(!restaurantId){
@@ -663,28 +729,9 @@ return;
 
 
 
-if(cart.length==0){
+let total=
 
-alert("Pilih menu dulu");
-
-return;
-
-}
-
-
-
-
-let nama=document.getElementById("nama").value;
-
-
-let phone=document.getElementById("phone").value;
-
-
-let meja=document.getElementById("meja").value;
-
-
-
-let total = cart.reduce(
+cart.reduce(
 
 (a,b)=>a+b.price,
 
@@ -694,7 +741,8 @@ let total = cart.reduce(
 
 
 
-let order = await addDoc(
+
+let order=await addDoc(
 
 collection(db,"orders"),
 
@@ -704,13 +752,16 @@ collection(db,"orders"),
 restaurantId,
 
 
-customerName:nama,
+customerName:
+nama.value,
 
 
-phone,
+phone:
+phone.value,
 
 
-tableNumber:meja,
+tableNumber:
+meja.value,
 
 
 status:"Pending",
@@ -729,9 +780,7 @@ createdAt:serverTimestamp()
 
 
 
-
 for(let item of cart){
-
 
 
 await addDoc(
@@ -748,7 +797,6 @@ order.id,
 
 ),
 
-
 {
 
 
@@ -759,8 +807,6 @@ price:item.price
 
 
 }
-
-
 
 );
 
@@ -773,14 +819,13 @@ price:item.price
 cart=[];
 
 
-tampilCart();
+renderCart();
 
 
 
-document.getElementById("pesanStatus").innerHTML=
+pesanStatus.innerHTML=
 
 "✅ Pesanan berhasil";
-
 
 
 };
@@ -791,47 +836,47 @@ document.getElementById("pesanStatus").innerHTML=
 
 
 
-// ==========================
-// ORDER REALTIME
-// ==========================
+
+
+// =====================
+// REALTIME ORDER
+// =====================
+
 
 
 onSnapshot(
 
 collection(db,"orders"),
 
-(snapshot)=>{
+snap=>{
 
 
 let html="";
 
 
 
-snapshot.forEach((doc)=>{
+snap.forEach(doc=>{
 
 
 let o=doc.data();
 
 
 
-html += `
-
+html+=`
 
 <div class="card">
 
 
 <h3>
 
-🍽️ ${o.restaurantId}
+${o.customerName}
 
 </h3>
 
 
-
 <p>
 
-Pelanggan :
-${o.customerName}
+Restoran : ${o.restaurantId}
 
 </p>
 
@@ -839,8 +884,7 @@ ${o.customerName}
 
 <p>
 
-Meja :
-${o.tableNumber}
+Meja : ${o.tableNumber}
 
 </p>
 
@@ -860,39 +904,7 @@ Rp ${Number(o.totalPrice).toLocaleString()}
 
 Status :
 
-<select>
-
-
-<option>
-
-Pending
-
-</option>
-
-
-<option>
-
-Proses Masak
-
-</option>
-
-
-<option>
-
-Siap Disajikan
-
-</option>
-
-
-<option>
-
-Selesai
-
-</option>
-
-
-</select>
-
+${o.status}
 
 </p>
 
@@ -908,7 +920,7 @@ Selesai
 
 
 
-document.getElementById("ordersList").innerHTML=html;
+ordersList.innerHTML=html;
 
 
 
@@ -918,10 +930,10 @@ document.getElementById("ordersList").innerHTML=html;
 
 
 
-
-
 </script>
 
 
+
 </body>
+
 </html>
