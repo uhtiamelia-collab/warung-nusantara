@@ -692,21 +692,14 @@ document.getElementById("menuList").innerHTML=html;
 
 
 window.tambah=function(name,price){
+    console.log("Tombol + Pesan diklik", name, price);
 
+    cart.push({
+        name,
+        price
+    });
 
-cart.push({
-
-name,
-
-price
-
-});
-
-
-renderCart();
-
-
-
+    renderCart();
 }
 
 
@@ -774,6 +767,7 @@ document.getElementById("total").innerHTML=
 
 
 window.checkout=async()=>{
+    console.log("Checkout diklik");
 
 
 
@@ -873,10 +867,8 @@ let html="";
 
 
 
-snapshot.forEach((doc)=>{
-
-
-let o = doc.data();
+snapshot.forEach((item)=>{
+   let o = item.data();
 
 
 
@@ -922,7 +914,7 @@ Rp ${Number(o.totalPrice)
 Status :
 
 <select 
-onchange="ubahStatus('${doc.id}',this.value)"
+onchange="ubahStatus('${item.id}',this.value)"
 >
 
 
