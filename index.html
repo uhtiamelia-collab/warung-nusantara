@@ -760,78 +760,44 @@ document.getElementById("total").innerHTML=
 // ==========================
 // SIMPAN ORDER
 // ==========================
+window.checkout = async()=> {
+  try {
+    alert("Checkout jalan");
 
+    if(cart.length==0){
+      alert("Pilih menu dulu");
+      return;
+    }
 
-window.checkout=async()=>{
-    console.log("Checkout diklik");
+    if(document.getElementById("meja").value==""){
+      alert("Pilih nomor meja dulu");
+      return;
+    }
 
+    let total = cart.reduce((a,b)=>a+b.price,0);
 
+    console.log("Sebelum addDoc");
 
-if(cart.length==0){
-alert("Pilih menu dulu");
-return;
-}
+    await addDoc(
+      collection(db,"restaurants",restaurantId,"orders"),
+      {
+        restaurantId: restaurantId,
+        restaurantName: restaurants[restaurantId].name,
+        customerName: document.getElementById("nama").value,
+        phone: document.getElementById("phone").value,
+        tableNumber: document.getElementById("meja").value,
+        items: cart,
+        totalPrice: total,
+        status: "Pending",
+        createdAt: serverTimestamp()
+      }
+    );
 
-if(document.getElementById("meja").value==""){
-alert("Pilih nomor meja dulu");
-return;
-}
-
-
-
-
-let total = cart.reduce(
-
-(a,b)=>a+b.price,
-
-0
-
-);
-
-await addDoc(
-
-collection(
-db,
-"restaurants",
-restaurantId,
-"orders"
-),
-
-{
-
-restaurantId:restaurantId,
-
-
-restaurantName:
-restaurants[restaurantId].name,
-
-
-customerName: document.getElementById("nama").value,
-phone: document.getElementById("phone").value,
-tableNumber: document.getElementById("meja").value,
-
-
-items:cart,
-
-
-totalPrice: total,
-
-
-status:"Pending",
-
-
-createdAt:serverTimestamp()
-
-}
-
-);
-cart=[];
-
-
-renderCart();
-
-
-document.getElementById("pesanStatus").innerHTML = "✅ Pesanan berhasil";
+    alert("Berhasil simpan");
+  } catch(err){
+    console.error(err);
+    alert("ERROR: " + err.message);
+  }
 };
 // ==========================
 // DATA ORDER REALTIME
@@ -971,6 +937,10 @@ window.ubahStatus = async(id,status)=>{
 };
 
 
+</script>
+document.querySelector("button").addEventListener("click", function(){
+   alert("BUTTON HIDUP");
+});
 </script>
 </body>
 </html>
