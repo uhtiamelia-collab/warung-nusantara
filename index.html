@@ -8,1105 +8,591 @@
 
 <title>Warung Nusantara</title>
 
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-
 <style>
-
 
 *{
 box-sizing:border-box;
 font-family:Poppins,sans-serif;
 }
 
-
 body{
-
 margin:0;
 background:#fff0f5;
 color:#5a3038;
-
 }
-
-
 
 header{
-
 background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
-
 padding:35px;
-
 text-align:center;
-
 color:#8b2f4d;
-
 border-radius:0 0 40px 40px;
-
 }
-
-
 
 .container{
-
 width:90%;
 max-width:1100px;
-
 margin:30px auto;
-
 }
-
-
 
 .card{
-
 background:white;
-
 padding:20px;
-
 border-radius:20px;
-
 margin:15px 0;
-
 box-shadow:0 5px 20px rgba(0,0,0,.1);
-
 }
-
-
 
 .grid{
-
 display:grid;
-
 grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-
 gap:20px;
-
 }
-
-
 
 img{
-
 width:100%;
-
 height:200px;
-
 object-fit:cover;
-
 border-radius:15px;
-
 }
-
-
 
 button{
-
 width:100%;
-
 padding:12px;
-
 background:#e75480;
-
 color:white;
-
 border:0;
-
 border-radius:15px;
-
 cursor:pointer;
-
 }
-
-
 
 button:hover{
-
 background:#c2185b;
-
 }
-
-
 
 input,select{
-
 width:100%;
-
 padding:12px;
-
 margin:8px 0;
-
 border-radius:10px;
-
 border:1px solid pink;
-
 }
-
-
 
 .status{
-
 color:#e75480;
-
 font-weight:bold;
-
 }
-
-
 
 #ordersList{
-
 max-height:450px;
-
 overflow-y:auto;
-
 }
 
+/* Modal */
+.modal-overlay{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.45);
+z-index:999;
+align-items:center;
+justify-content:center;
+}
+.modal-overlay.active{
+display:flex;
+}
+.modal-box{
+background:white;
+border-radius:20px;
+padding:30px;
+width:90%;
+max-width:460px;
+box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+.modal-box h3{
+margin-top:0;
+color:#8b2f4d;
+}
+.modal-actions{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+.modal-actions button{
+margin:0;
+}
+.btn-batal{
+background:#ccc;
+color:#333;
+}
+.btn-batal:hover{
+background:#aaa;
+}
+
+/* Cart item row */
+.cart-row{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:6px 0;
+border-bottom:1px solid #ffe0eb;
+}
+.cart-qty{
+display:flex;
+align-items:center;
+gap:8px;
+}
+.cart-qty button{
+width:28px;
+height:28px;
+padding:0;
+border-radius:8px;
+font-size:16px;
+line-height:1;
+}
+
+/* Order card detail */
+.order-items-list{
+margin:6px 0 0 0;
+padding-left:18px;
+}
+.order-items-list li{
+font-size:13px;
+color:#7a4050;
+}
+
+/* Loading */
+.loading-text{
+color:#e75480;
+font-style:italic;
+}
+
+/* Tambah Customer btn */
+.btn-tambah-customer{
+background:#ff85a2;
+margin-bottom:6px;
+}
+.btn-tambah-customer:hover{
+background:#e75480;
+}
 
 </style>
 
 </head>
 
-
 <body>
 
-
-
 <header>
-
-<h1>
-🍽️ Warung Nusantara
-</h1>
-
-<p>
-Sistem Pemesanan Digital Firestore
-</p>
-
-
+<h1>🍽️ Warung Nusantara</h1>
+<p>Sistem Pemesanan Digital Firestore</p>
 </header>
 
-
-
+<!-- Modal Tambah Customer -->
+<div class="modal-overlay" id="modalCustomer">
+  <div class="modal-box">
+    <h3>👤 Tambah Customer</h3>
+    <input id="cust-name" placeholder="Nama Customer *">
+    <input id="cust-phone" placeholder="Nomor HP *">
+    <input id="cust-address" placeholder="Alamat">
+    <input id="cust-email" placeholder="Email">
+    <input id="cust-note" placeholder="Catatan">
+    <p id="modalStatus" class="status" style="min-height:20px;"></p>
+    <div class="modal-actions">
+      <button onclick="simpanCustomer()">💾 Simpan</button>
+      <button class="btn-batal" onclick="tutupModal()">Batal</button>
+    </div>
+  </div>
+</div>
 
 <div class="container">
 
+  <h2>Pilih Lokasi Restoran</h2>
+  <select id="restoSelect" onchange="gantiRestoran()"></select>
 
+  <div class="card" id="restoInfo">Loading...</div>
 
-<h2>Pilih Lokasi Restoran</h2>
+  <h2>Menu</h2>
+  <div id="menuList" class="grid"></div>
 
+  <h2>🛒 Pesanan</h2>
 
+  <button class="btn-tambah-customer" onclick="bukaModal()">+ Tambah Customer</button>
 
-<select id="restoSelect"
-onchange="gantiRestoran()">
+  <select id="customerSelect" onchange="pilihCustomer()">
+    <option value="">-- Pilih Customer --</option>
+  </select>
 
-</select>
+  <input id="nama" placeholder="Nama Customer *">
+  <input id="phone" placeholder="Nomor HP *">
+  <input id="alamat" placeholder="Alamat">
+  <input id="meja" placeholder="Nomor Meja *">
 
+  <div class="card">
+    <h3>Keranjang</h3>
+    <div id="cartBox">Kosong</div>
+    <h3 id="total">Total Rp 0</h3>
+    <button onclick="checkout()">Kirim Pesanan</button>
+    <p id="pesanStatus" class="status"></p>
+  </div>
 
-
-
-<div class="card" id="restoInfo">
-
-Loading...
-
-</div>
-
-
-
-
-
-<h2>Menu</h2>
-
-
-<div id="menuList" class="grid">
-
-</div>
-
-
-
-
-
-
-
-<h2>
-🛒 Pesanan
-</h2>
-
-
-<input id="nama"
-placeholder="Nama Customer">
-
-
-<input id="phone"
-placeholder="Nomor HP">
-
-
-<input id="meja"
-placeholder="Nomor Meja">
-
-
-
-
-
-<div class="card">
-
-
-<h3>
-Keranjang
-</h3>
-
-
-<div id="cartBox">
-
-Kosong
+  <h2>📦 Data Pesanan</h2>
+  <div id="ordersList"></div>
 
 </div>
-
-
-
-<h3 id="total">
-
-Total Rp 0
-
-</h3>
-
-
-<button onclick="checkout()">
-
-Kirim Pesanan
-
-</button>
-
-
-<p id="pesanStatus"
-class="status">
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-<h2>
-📦 Data Pesanan
-</h2>
-
-
-
-<div id="ordersList">
-
-</div>
-
-
-
-
-</div>
-
-
-
-
-
-
-
 
 <script type="module">
 
-
-import {initializeApp}
-
-from
-
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-
-getFirestore,
-
-collection,
-
-getDocs,
-
-addDoc,
-
-serverTimestamp,
-
-onSnapshot,
-
-doc,
-
-updateDoc
-
-}
-
-from
-
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-
-
-
-
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-
-
-apiKey:
-"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
-
-
-authDomain:
-"warung-nusantara-9f331.firebaseapp.com",
-
-
-projectId:
-"warung-nusantara-9f331",
-
-
-storageBucket:
-"warung-nusantara-9f331.firebasestorage.app",
-
-
-messagingSenderId:
-"68513276988",
-
-
-appId:
-"1:68513276988:web:b13b148a51ce216efecf39"
-
+  apiKey: "AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
+  authDomain: "warung-nusantara-9f331.firebaseapp.com",
+  projectId: "warung-nusantara-9f331",
+  storageBucket: "warung-nusantara-9f331.firebasestorage.app",
+  messagingSenderId: "68513276988",
+  appId: "1:68513276988:web:b13b148a51ce216efecf39"
 };
 
-
-
-
-
 const app = initializeApp(firebaseConfig);
-
-
 const db = getFirestore(app);
 
+let restaurantId = "jombang01";
+let restaurants = {};
+let cart = [];
 
+// Listener handles — agar tidak dobel
+let unsubOrders = null;
+let unsubCustomers = null;
 
+// ============================
+// LOAD RESTORAN
+// ============================
+async function loadRestaurant() {
+  try {
+    const snap = await getDocs(collection(db, "restaurants"));
+    let html = "";
+    snap.forEach((item) => {
+      let r = item.data();
+      restaurants[item.id] = r;
+      html += `<option value="${item.id}">${r.name}</option>`;
+    });
+    document.getElementById("restoSelect").innerHTML = html;
 
+    if (restaurants["jombang01"]) {
+      restaurantId = "jombang01";
+      document.getElementById("restoSelect").value = "jombang01";
+    }
 
-let restaurantId="jombang01";
-
-
-let restaurants={};
-
-
-let cart=[];
-
-
-
-
-
-
-
-// ==========================
-// AMBIL DATA RESTORAN
-// ==========================
-
-
-async function loadRestaurant(){
-
-
-
-const snap = await getDocs(
-
-collection(db,"restaurants")
-
-);
-
-
-
-let html="";
-
-
-
-snap.forEach((item)=>{
-
-
-let r=item.data();
-
-
-
-restaurants[item.id]=r;
-
-
-
-html += `
-
-<option value="${item.id}">
-
-${r.name}
-
-</option>
-
-
-`;
-
-
-
-});
-
-
-
-
-
-document.getElementById("restoSelect").innerHTML=html;
-
-
-
-
-
-// DEFAULT JOMBANG
-
-if(restaurants["jombang01"]){
-
-
-restaurantId="jombang01";
-
-
-document.getElementById("restoSelect").value="jombang01";
-
-
+    showRestaurant();
+    loadMenu();
+    startOrdersListener();
+    startCustomersListener();
+  } catch (err) {
+    console.error("Gagal load restoran:", err);
+  }
 }
-
-
-showRestaurant();
-
-
-loadMenu();
-
-
-loadOrders();
-
-
-
-}
-
-
-
 
 loadRestaurant();
 
-
-
-
-
-
-
-
-// ==========================
-// PINDAH RESTORAN
-// ==========================
-
-
-window.gantiRestoran=function(){
-
-
-restaurantId =
-document.getElementById("restoSelect").value;
-
-
-
-cart=[];
-
-
-renderCart();
-
-
-showRestaurant();
-
-
-loadMenu();
-
-
+// ============================
+// GANTI RESTORAN
+// ============================
+window.gantiRestoran = function () {
+  restaurantId = document.getElementById("restoSelect").value;
+  cart = [];
+  renderCart();
+  showRestaurant();
+  loadMenu();
+  startOrdersListener();
+  startCustomersListener();
 };
 
-
-
-
-
-
-
-
-
-// ==========================
+// ============================
 // INFO RESTORAN
-// ==========================
-
-
-function showRestaurant(){
-
-
-
-let r=restaurants[restaurantId];
-
-
-
-if(!r)return;
-
-
-
-document.getElementById("restoInfo").innerHTML=`
-
-
-<h2>
-🍽️ ${r.name}
-</h2>
-
-
-<p>
-📍 ${r.address || "-"}
-</p>
-
-
-<p>
-
-🕒 ${r.openHour || "08:00 - 21:00"}
-
-</p>
-
-
-<p>
-
-Status :
-
-<b>
-
-${r.status || "Buka"}
-
-</b>
-
-</p>
-
-
-`;
-
-
-
+// ============================
+function showRestaurant() {
+  let r = restaurants[restaurantId];
+  if (!r) return;
+  document.getElementById("restoInfo").innerHTML = `
+    <h2>🍽️ ${r.name}</h2>
+    <p>📍 ${r.address || "-"}</p>
+    <p>🕒 ${r.openHour || "08:00 - 21:00"}</p>
+    <p>Status : <b>${r.status || "Buka"}</b></p>
+  `;
 }
 
-
-
-
-
-
-
-
-
-// ==========================
+// ============================
 // MENU
-// ==========================
-
-
-async function loadMenu(){
-
-
-
-const snap = await getDocs(
-
-
-collection(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"menus"
-
-)
-
-
-);
-
-
-
-
-
-let html="";
-
-
-
-snap.forEach((item)=>{
-
-
-
-let m=item.data();
-
-
-
-
-
-let harga = Number(
-
-m.price ??
-
-m.harga ??
-
-m.priceMenu ??
-
-0
-
-);
-
-
-
-
-
-let gambar =
-
-m.imageUrl ??
-
-m.image ??
-
-m.photo ??
-
-"https://via.placeholder.com/300";
-
-
-
-
-
-html += `
-
-
-
-<div class="card">
-
-
-<img src="${gambar}">
-
-
-<h3>
-
-${m.name}
-
-</h3>
-
-
-<p>
-
-${m.category}
-
-</p>
-
-
-
-<p>
-
-Rp ${harga.toLocaleString("id-ID")}
-
-</p>
-
-
-
-<button onclick="tambah('${m.name}',${harga})">
-
-+ Pesan
-
-</button>
-
-
-
-</div>
-
-
-
-`;
-
-
-
-});
-
-
-
-
-document.getElementById("menuList").innerHTML=html;
-
-
-
+// ============================
+async function loadMenu() {
+  document.getElementById("menuList").innerHTML = `<p class="loading-text">Memuat menu...</p>`;
+  try {
+    const snap = await getDocs(collection(db, "restaurants", restaurantId, "menus"));
+    let html = "";
+    snap.forEach((item) => {
+      let m = item.data();
+      let harga = Number(m.price ?? m.harga ?? m.priceMenu ?? 0);
+      let gambar = m.imageUrl ?? m.image ?? m.photo ?? "https://via.placeholder.com/300";
+      html += `
+        <div class="card">
+          <img src="${gambar}" onerror="this.src='https://via.placeholder.com/300'">
+          <h3>${m.name}</h3>
+          <p>${m.category || ""}</p>
+          <p>Rp ${harga.toLocaleString("id-ID")}</p>
+          <button onclick="tambah('${m.name.replace(/'/g,"\\'")}',${harga})">+ Pesan</button>
+        </div>
+      `;
+    });
+    document.getElementById("menuList").innerHTML = html || "<p>Belum ada menu.</p>";
+  } catch (err) {
+    console.error("Gagal load menu:", err);
+    document.getElementById("menuList").innerHTML = "<p>Gagal memuat menu.</p>";
+  }
 }
 
-
-
-
-
-
-
-
-
-// ==========================
+// ============================
 // KERANJANG
-// ==========================
-
-
-window.tambah=function(name,price){
-
-
-cart.push({
-
-name,
-
-price
-
-});
-
-
-renderCart();
-
-
-
-}
-
-
-
-
-
-function renderCart(){
-
-
-
-let html="";
-
-let total=0;
-
-
-
-cart.forEach(item=>{
-
-
-html += `
-
-<p>
-
-${item.name}
-
-Rp ${item.price.toLocaleString("id-ID")}
-
-</p>
-
-`;
-
-
-total += item.price;
-
-
-});
-
-
-
-document.getElementById("cartBox").innerHTML=
-
-html || "Kosong";
-
-
-
-document.getElementById("total").innerHTML=
-
-"Total Rp "+total.toLocaleString("id-ID");
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ==========================
-// SIMPAN ORDER
-// ==========================
-
-
-window.checkout=async()=>{
-
-
-
-if(cart.length==0){
-
-alert("Pilih menu dulu");
-
-return;
-
-}
-
-
-
-
-
-let total = cart.reduce(
-
-(a,b)=>a+b.price,
-
-0
-
-);
-
-
-
-
-
-await addDoc(
-
-collection(db,"orders"),
-
-{
-
-
-restaurantId,
-
-
-customerName:
-
-nama.value,
-
-
-phone:
-
-phone.value,
-
-
-tableNumber:
-
-meja.value,
-
-
-status:"Pending",
-
-
-totalPrice:total,
-
-
-createdAt:serverTimestamp()
-
-
-}
-
-
-);
-
-
-
-cart=[];
-
-
-renderCart();
-
-
-pesanStatus.innerHTML="✅ Pesanan berhasil";
-
-
-
+// ============================
+window.tambah = function (name, price) {
+  let existing = cart.find(i => i.name === name);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ name, price, qty: 1 });
+  }
+  renderCart();
 };
 
-
-
-
-
-
-
-
-
-// ==========================
-// DATA ORDER REALTIME
-// ==========================
-
-
-
-function loadOrders(){
-
-
-
-onSnapshot(
-
-collection(db,"orders"),
-
-snap=>{
-
-
-
-let html="";
-
-
-
-snap.forEach(item=>{
-
-
-
-let o=item.data();
-
-
-
-
-if(o.restaurantId != restaurantId)
-
-return;
-
-
-
-
-
-html += `
-
-
-
-<div class="card">
-
-
-<h3>
-
-${o.customerName}
-
-</h3>
-
-
-
-<p>
-
-Restoran :
-
-${restaurants[restaurantId]?.name}
-
-</p>
-
-
-
-<p>
-
-Meja :
-
-${o.tableNumber}
-
-</p>
-
-
-
-<p>
-
-Total :
-
-Rp ${Number(o.totalPrice).toLocaleString("id-ID")}
-
-</p>
-
-
-
-<p>
-
-Status:
-
-
-<select onchange="ubahStatus('${item.id}',this.value)">
-
-
-<option ${o.status=="Pending"?"selected":""}>
-
-Pending
-
-</option>
-
-
-
-<option ${o.status=="Proses Masak"?"selected":""}>
-
-Proses Masak
-
-</option>
-
-
-
-<option ${o.status=="Siap Disajikan"?"selected":""}>
-
-Siap Disajikan
-
-</option>
-
-
-
-<option ${o.status=="Selesai"?"selected":""}>
-
-Selesai
-
-</option>
-
-
-
-</select>
-
-
-</p>
-
-
-</div>
-
-
-`;
-
-
-
-});
-
-
-
-
-ordersList.innerHTML=html;
-
-
-
-}
-
-);
-
-
-
-}
-
-
-
-
-
-window.ubahStatus=async(id,status)=>{
-
-
-await updateDoc(
-
-doc(db,"orders",id),
-
-{
-
-status
-
-}
-
-);
-
-
+window.kurang = function (name) {
+  let idx = cart.findIndex(i => i.name === name);
+  if (idx === -1) return;
+  cart[idx].qty--;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  renderCart();
 };
 
+function renderCart() {
+  let html = "";
+  let total = 0;
+  cart.forEach(item => {
+    let subtotal = item.price * item.qty;
+    total += subtotal;
+    html += `
+      <div class="cart-row">
+        <span>${item.name}</span>
+        <div class="cart-qty">
+          <button onclick="kurang('${item.name.replace(/'/g,"\\'")}')">-</button>
+          <span>${item.qty}</span>
+          <button onclick="tambah('${item.name.replace(/'/g,"\\'")}',${item.price})">+</button>
+        </div>
+        <span>Rp ${subtotal.toLocaleString("id-ID")}</span>
+      </div>
+    `;
+  });
+  document.getElementById("cartBox").innerHTML = html || "Kosong";
+  document.getElementById("total").innerHTML = "Total Rp " + total.toLocaleString("id-ID");
+}
 
+// ============================
+// MODAL CUSTOMER
+// ============================
+window.bukaModal = function () {
+  document.getElementById("cust-name").value = "";
+  document.getElementById("cust-phone").value = "";
+  document.getElementById("cust-address").value = "";
+  document.getElementById("cust-email").value = "";
+  document.getElementById("cust-note").value = "";
+  document.getElementById("modalStatus").innerHTML = "";
+  document.getElementById("modalCustomer").classList.add("active");
+};
 
+window.tutupModal = function () {
+  document.getElementById("modalCustomer").classList.remove("active");
+};
 
+window.simpanCustomer = async function () {
+  let name = document.getElementById("cust-name").value.trim();
+  let phone = document.getElementById("cust-phone").value.trim();
+  let address = document.getElementById("cust-address").value.trim();
+  let email = document.getElementById("cust-email").value.trim();
+  let note = document.getElementById("cust-note").value.trim();
 
+  if (!name) { document.getElementById("modalStatus").innerHTML = "⚠️ Nama wajib diisi"; return; }
+  if (!phone) { document.getElementById("modalStatus").innerHTML = "⚠️ Nomor HP wajib diisi"; return; }
+
+  document.getElementById("modalStatus").innerHTML = "⏳ Menyimpan...";
+
+  try {
+    await addDoc(collection(db, "restaurants", restaurantId, "customers"), {
+      name,
+      phone,
+      address,
+      email,
+      note,
+      createdAt: serverTimestamp()
+    });
+    document.getElementById("modalStatus").innerHTML = "✅ Customer tersimpan";
+    setTimeout(() => tutupModal(), 800);
+  } catch (err) {
+    console.error("Gagal simpan customer:", err);
+    document.getElementById("modalStatus").innerHTML = "❌ Gagal menyimpan";
+  }
+};
+
+// ============================
+// CUSTOMERS REALTIME
+// ============================
+function startCustomersListener() {
+  if (unsubCustomers) { unsubCustomers(); unsubCustomers = null; }
+
+  unsubCustomers = onSnapshot(
+    collection(db, "restaurants", restaurantId, "customers"),
+    (snap) => {
+      let html = `<option value="">-- Pilih Customer --</option>`;
+      snap.forEach(item => {
+        let c = item.data();
+        html += `<option value="${item.id}" data-name="${c.name}" data-phone="${c.phone}" data-address="${c.address || ""}">${c.name} - ${c.phone}</option>`;
+      });
+      document.getElementById("customerSelect").innerHTML = html;
+    },
+    (err) => { console.error("Error customers listener:", err); }
+  );
+}
+
+window.pilihCustomer = function () {
+  let sel = document.getElementById("customerSelect");
+  let opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) return;
+  document.getElementById("nama").value = opt.dataset.name || "";
+  document.getElementById("phone").value = opt.dataset.phone || "";
+  document.getElementById("alamat").value = opt.dataset.address || "";
+};
+
+// ============================
+// CHECKOUT
+// ============================
+window.checkout = async () => {
+  let namaVal = document.getElementById("nama").value.trim();
+  let phoneVal = document.getElementById("phone").value.trim();
+  let mejaVal = document.getElementById("meja").value.trim();
+  let alamatVal = document.getElementById("alamat").value.trim();
+
+  let sel = document.getElementById("customerSelect");
+  let customerId = sel.value || "";
+
+  if (!namaVal) { alert("Nama customer wajib diisi"); return; }
+  if (!phoneVal) { alert("Nomor HP wajib diisi"); return; }
+  if (!mejaVal) { alert("Nomor meja wajib diisi"); return; }
+  if (cart.length === 0) { alert("Pilih menu dulu"); return; }
+
+  let total = cart.reduce((a, b) => a + b.price * b.qty, 0);
+
+  let items = cart.map(i => ({ name: i.name, price: i.price, qty: i.qty }));
+
+  document.getElementById("pesanStatus").innerHTML = "⏳ Mengirim pesanan...";
+
+  try {
+    await addDoc(
+      collection(db, "restaurants", restaurantId, "orders"),
+      {
+        restaurantId,
+        customerId,
+        customerName: namaVal,
+        phone: phoneVal,
+        address: alamatVal,
+        tableNumber: mejaVal,
+        items,
+        totalPrice: total,
+        status: "Pending",
+        createdAt: serverTimestamp()
+      }
+    );
+    cart = [];
+    renderCart();
+    document.getElementById("pesanStatus").innerHTML = "✅ Pesanan berhasil dikirim!";
+  } catch (err) {
+    console.error("Gagal checkout:", err);
+    document.getElementById("pesanStatus").innerHTML = "❌ Gagal mengirim pesanan";
+  }
+};
+
+// ============================
+// ORDERS REALTIME
+// ============================
+function startOrdersListener() {
+  if (unsubOrders) { unsubOrders(); unsubOrders = null; }
+
+  document.getElementById("ordersList").innerHTML = `<p class="loading-text">Memuat pesanan...</p>`;
+
+  unsubOrders = onSnapshot(
+    collection(db, "restaurants", restaurantId, "orders"),
+    (snap) => {
+      let html = "";
+      snap.forEach(item => {
+        let o = item.data();
+        let itemsHtml = "";
+        if (Array.isArray(o.items) && o.items.length > 0) {
+          itemsHtml = `<ul class="order-items-list">` +
+            o.items.map(i => `<li>${i.name} x${i.qty} — Rp ${(i.price * i.qty).toLocaleString("id-ID")}</li>`).join("") +
+            `</ul>`;
+        }
+
+        let tgl = "";
+        if (o.createdAt && o.createdAt.toDate) {
+          tgl = o.createdAt.toDate().toLocaleString("id-ID");
+        }
+
+        html += `
+          <div class="card">
+            <h3>👤 ${o.customerName || "-"}</h3>
+            <p>📞 ${o.phone || "-"}</p>
+            <p>🍽️ Restoran : ${restaurants[restaurantId]?.name || restaurantId}</p>
+            <p>🪑 Meja : ${o.tableNumber || "-"}</p>
+            ${itemsHtml}
+            <p><b>Total : Rp ${Number(o.totalPrice).toLocaleString("id-ID")}</b></p>
+            <p>📅 ${tgl}</p>
+            <p>Status :
+              <select onchange="ubahStatus('${item.id}', this.value)">
+                <option ${o.status === "Pending" ? "selected" : ""}>Pending</option>
+                <option ${o.status === "Diproses" ? "selected" : ""}>Diproses</option>
+                <option ${o.status === "Siap Disajikan" ? "selected" : ""}>Siap Disajikan</option>
+                <option ${o.status === "Selesai" ? "selected" : ""}>Selesai</option>
+              </select>
+            </p>
+          </div>
+        `;
+      });
+      document.getElementById("ordersList").innerHTML = html || "<p>Belum ada pesanan.</p>";
+    },
+    (err) => { console.error("Error orders listener:", err); }
+  );
+}
+
+window.ubahStatus = async (id, status) => {
+  try {
+    await updateDoc(
+      doc(db, "restaurants", restaurantId, "orders", id),
+      { status }
+    );
+  } catch (err) {
+    console.error("Gagal ubah status:", err);
+  }
+};
 
 </script>
 
-
 </body>
-
 </html>
