@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warung Nusantara</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body{
+  margin:0;
+  background-image:url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200');
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+}
+
+.overlay{
+  background:rgba(0,0,0,0.65);
+  min-height:100vh;
+  padding:20px;
+}
+
+.container{
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+  color:white;
+}
+
+h1,h2{
+  text-align:center;
+}
+
+.card{
+  background:rgba(255,255,255,0.95);
+  color:black;
+  padding:20px;
+  border-radius:15px;
+  margin:15px 0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#8B4513;
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#A0522D;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="overlay">
+<div class="container">
+
+<h1>🍽️ Warung Nusantara</h1>
+
+<h2>Pilih Restoran</h2>
+<select id="restoSelect"></select>
+
+<div id="restoInfo" class="card"></div>
+
+<h2>Menu</h2>
+<div id="menuList" class="grid"></div>
+
+<h2>Pesanan</h2>
+<input id="nama" placeholder="Nama">
+<input id="phone" placeholder="Nomor HP">
+<select id="meja"></select>
+
+<div class="card">
+<h3>Keranjang</h3>
+<div id="cartBox">Kosong</div>
+<h3 id="total">Total Rp 0</h3>
+<button onclick="checkout()">Kirim Pesanan</button>
+</div>
+
+<h2>Data Pesanan</h2>
+<div id="ordersList"></div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
+  authDomain: "warung-nusantara-9f331.firebaseapp.com",
+  projectId: "warung-nusantara-9f331",
+  storageBucket: "warung-nusantara-9f331.firebasestorage.app",
+  messagingSenderId: "68513276988",
+  appId: "1:68513276988:web:b13b148a51ce216efecf39"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let restaurantId="";
+let restaurants={};
+let cart=[];
+
+function loadMeja(){
+ let html='<option value="">Pilih Meja</option>';
+ for(let i=1;i<=20;i++){
+   html += `<option value="${i}">Meja ${i}</option>`;
+ }
+ document.getElementById("meja").innerHTML=html;
+}
+loadMeja();
+
+async function loadRestaurant(){
+ const snap = await getDocs(collection(db,"restaurants"));
+ let html="";
+
+ snap.forEach(docSnap=>{
+   restaurants[docSnap.id]=docSnap.data();
+   html += `<option value="${docSnap.id}">${docSnap.data().name}</option>`;
+ });
+
+ document.getElementById("restoSelect").innerHTML=html;
+ restaurantId=Object.keys(restaurants)[0];
+
+ showRestaurant();
+ loadMenu();
+ loadOrders();
+}
+loadRestaurant();
+
+document.getElementById("restoSelect").addEventListener("change",(e)=>{
+ restaurantId=e.target.value;
+ cart=[];
+ renderCart();
+ showRestaurant();
+ loadMenu();
+ loadOrders();
+});
+
+function showRestaurant(){
+ let r=restaurants[restaurantId];
+ if(!r) return;
+
+ document.getElementById("restoInfo").innerHTML=`
+   <h2>${r.name}</h2>
+   <p>${r.address}</p>
+   <p>${r.openHours}</p>
+ `;
+}
+
+async function loadMenu(){
+ const snap=await getDocs(collection(db,"restaurants",restaurantId,"menus"));
+
+ let html="";
+
+ snap.forEach(docSnap=>{
+   let m=docSnap.data();
+
+   html += `
+   <div class="card">
+   <img src="${m.imageUrl}">
+   <h3>${m.name}</h3>
+   <p>${m.category}</p>
+   <p>Rp ${m.price.toLocaleString("id-ID")}</p>
+   <button onclick="tambah('${m.name}',${m.price})">+ Pesan</button>
+   </div>
+   `;
+ });
+
+ document.getElementById("menuList").innerHTML=html;
+}
+
+window.tambah=function(name,price){
+ cart.push({name,price});
+ renderCart();
+}
+
+function renderCart(){
+ let html="";
+ let total=0;
+
+ cart.forEach(item=>{
+   html += `<p>${item.name} - Rp ${item.price}</p>`;
+   total += item.price;
+ });
+
+ document.getElementById("cartBox").innerHTML=html || "Kosong";
+ document.getElementById("total").innerHTML="Total Rp "+total.toLocaleString("id-ID");
+}
+
+window.checkout = async function(){
+ if(cart.length===0){
+   alert("Pilih menu dulu");
+   return;
+ }
+
+ let nama=document.getElementById("nama").value;
+ let phone=document.getElementById("phone").value;
+ let meja=document.getElementById("meja").value;
+
+ if(!nama || !phone || !meja){
+   alert("Lengkapi data");
+   return;
+ }
+
+ let total=cart.reduce((a,b)=>a+b.price,0);
+
+ try{
+   const customerRef=await addDoc(collection(db,"customers"),{
+     name:nama,
+     phone:phone,
+     loyaltyPoints:0
+   });
+
+   const orderRef=await addDoc(collection(db,"orders"),{
+     customerId:customerRef.id,
+     restaurantId:restaurantId,
+     tableNumber:Number(meja),
+     status:"pending",
+     totalPrice:total,
+     createdAt:serverTimestamp()
+   });
+
+   for(let item of cart){
+     await addDoc(collection(db,"orders",orderRef.id,"orderItems"),{
+       menuId:item.name,
+       menuName:item.name,
+       qty:1,
+       unitPrice:item.price,
+       subtotal:item.price
+     });
+   }
+
+   alert("Pesanan berhasil!");
+   cart=[];
+   renderCart();
+
+ }catch(err){
+   alert(err.message);
+ }
+}
+
+function loadOrders(){
+ const q=query(collection(db,"orders"),where("restaurantId","==",restaurantId));
+
+ onSnapshot(q,(snapshot)=>{
+   let html="";
+
+   snapshot.forEach(docSnap=>{
+     let o=docSnap.data();
+
+     html += `
+     <div class="card">
+     <h3>Customer ID: ${o.customerId}</h3>
+     <p>Meja: ${o.tableNumber}</p>
+     <p>Status: ${o.status}</p>
+     <p>Total: Rp ${o.totalPrice.toLocaleString("id-ID")}</p>
+     </div>
+     `;
+   });
+
+   document.getElementById("ordersList").innerHTML=html || "Belum ada pesanan";
+ });
+}
+</script>
+</body>
+</html>
