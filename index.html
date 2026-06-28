@@ -1,185 +1,201 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Warung Nusantara - Order System</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Warung Nusantara</title>
+
+<style>
+body{
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+}
+
+.header{
+  text-align:center;
+  padding:20px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.form-box{
+  background: rgba(255,255,255,0.1);
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+  backdrop-filter: blur(10px);
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  border:none;
+}
+
+.menu-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+}
+
+.card{
+  background: rgba(255,255,255,0.1);
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.card:hover{ transform:scale(1.05); }
+
+.card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+}
+
+.card-body{ padding:10px; }
+
+.price{ color:#00ffcc; font-weight:bold; }
+
+button{
+  width:100%;
+  padding:8px;
+  border:none;
+  background:#00ffcc;
+  color:#000;
+  font-weight:bold;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.order-box{
+  margin-top:20px;
+  padding:15px;
+  background: rgba(255,255,255,0.1);
+  border-radius:10px;
+}
+
+.status{
+  padding:5px 10px;
+  border-radius:8px;
+  display:inline-block;
+  font-size:12px;
+  margin-top:10px;
+}
+
+.pending{background:orange;}
+.masak{background:blue;}
+.siap{background:green;}
+.selesai{background:gray;}
+</style>
 </head>
 
 <body>
 
-  <h2>🍽️ Form Pesanan Warung Nusantara</h2>
+<div class="header">🍽️ WARUNG NUSANTARA</div>
 
-  <!-- =========================
-       FORM ORDER
-  ========================== -->
-  <form id="orderForm">
+<div class="container">
 
-    <input type="text" id="customerName" placeholder="Nama Pelanggan" required />
-    <br><br>
+<!-- =========================
+     FORM INFO CUSTOMER
+========================= -->
+<div class="form-box">
+  <input id="nama" placeholder="Nama Pelanggan">
+  <input id="meja" placeholder="Nomor Meja">
+  
+  <select id="lokasi">
+    <option>Bojonegoro</option>
+    <option>Jombang</option>
+  </select>
+</div>
 
-    <input type="text" id="phone" placeholder="No HP" />
-    <br><br>
+<!-- MENU -->
+<div class="menu-grid" id="menu"></div>
 
-    <select id="lokasi">
-      <option value="Bojonegoro">Bojonegoro</option>
-      <option value="Jombang">Jombang</option>
-    </select>
-    <br><br>
+<!-- ORDER OUTPUT -->
+<div class="order-box" id="orderBox">
+  <h3>📦 Order Kamu</h3>
+  <p>Belum ada pesanan</p>
+</div>
 
-    <input type="number" id="meja" placeholder="Nomor Meja" />
-    <br><br>
+</div>
 
-    <textarea id="note" placeholder="Catatan (optional)"></textarea>
-    <br><br>
+<script>
+const menus = [
+  {name:"Nasi Rawon",price:8000,img:"https://raw.githubusercontent.com/uhtiamelia-collab/warung-nusantara/main/images/Nasi%20Rawon.jpg"},
+  {name:"Nasi Padang",price:25000,img:"https://raw.githubusercontent.com/uhtiamelia-collab/warung-nusantara/main/images/Nasi%20padang.jpg"},
+  {name:"Matcha Latte",price:15000,img:"https://raw.githubusercontent.com/uhtiamelia-collab/warung-nusantara/main/images/Matcha%20Latte.jpg"},
+  {name:"Soto Ayam",price:20000,img:"https://raw.githubusercontent.com/uhtiamelia-collab/warung-nusantara/main/images/soto.jpg"},
+  {name:"Jus Alpukat",price:11000,img:"https://raw.githubusercontent.com/uhtiamelia-collab/warung-nusantara/main/images/Jus%20Alpukat.jpeg"}
+];
 
-    <button type="submit">Kirim Pesanan</button>
+let cart = [];
 
-  </form>
+const menuContainer = document.getElementById("menu");
 
-  <hr>
+menus.forEach((m,i)=>{
+  menuContainer.innerHTML += `
+    <div class="card">
+      <img src="${m.img}">
+      <div class="card-body">
+        <h4>${m.name}</h4>
+        <p class="price">Rp ${m.price}</p>
+        <button onclick="add(${i})">Tambah</button>
+      </div>
+    </div>
+  `;
+});
 
-  <h3>📦 Status Order:</h3>
-  <div id="output"></div>
+function add(i){
+  cart.push(menus[i]);
+  render();
+}
 
-  <!-- =========================
-       FIREBASE + LOGIC
-  ========================== -->
-  <script type="module">
+function render(){
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  const nama = document.getElementById("nama").value || "-";
+  const meja = document.getElementById("meja").value || "-";
+  const lokasi = document.getElementById("lokasi").value;
 
-    // =========================
-    // CONFIG FIREBASE
-    // =========================
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-    };
+  let total = cart.reduce((a,b)=>a+b.price,0);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  let html = `
+    <h3>📦 Detail Order</h3>
+    <p><b>Nama:</b> ${nama}</p>
+    <p><b>Meja:</b> ${meja}</p>
+    <p><b>Lokasi:</b> ${lokasi}</p>
+    <hr>
+  `;
 
-    const form = document.getElementById("orderForm");
-    const output = document.getElementById("output");
+  cart.forEach(c=>{
+    html += `<p>🍽️ ${c.name} - Rp ${c.price}</p>`;
+  });
 
-    // =========================
-    // SUBMIT ORDER
-    // =========================
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  html += `
+    <hr>
+    <h3>Total: Rp ${total}</h3>
 
-      // =========================
-      // DATA ORDER LENGKAP
-      // =========================
-      const orderData = {
-        orderId: crypto.randomUUID(),
-        orderNumber: "ORD-" + Date.now(),
+    <p>Status:</p>
+    <span class="status pending">PENDING</span>
+    <span class="status masak">MASAK</span>
+    <span class="status siap">SIAP</span>
+    <span class="status selesai">SELESAI</span>
+  `;
 
-        customer: {
-          name: document.getElementById("customerName").value,
-          phone: document.getElementById("phone").value
-        },
-
-        restaurant: {
-          name: "Warung Nusantara",
-          location: document.getElementById("lokasi").value
-        },
-
-        table: {
-          number: document.getElementById("meja").value || null,
-          code: "T" + document.getElementById("meja").value + "-BOJO"
-        },
-
-        orderType: "dine-in",
-
-        items: [
-          {
-            menuId: "menu_001",
-            name: "Nasi Rawon",
-            qty: 1,
-            price: 8000,
-            subtotal: 8000
-          },
-          {
-            menuId: "menu_002",
-            name: "Es Teh",
-            qty: 1,
-            price: 3000,
-            subtotal: 3000
-          }
-        ],
-
-        summary: {
-          subtotal: 11000,
-          grandTotal: 11000
-        },
-
-        status: "pending",
-        // pending → masak → siap → selesai
-
-        payment: {
-          status: "unpaid",
-          method: "cash"
-        },
-
-        note: document.getElementById("note").value,
-
-        timing: {
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          estimatedMinutes: 15
-        }
-      };
-
-      try {
-        // =========================
-        // KIRIM KE FIREBASE
-        // =========================
-        const docRef = await addDoc(collection(db, "orders"), orderData);
-
-        // =========================
-        // OUTPUT DISPLAY
-        // =========================
-        output.innerHTML = `
-          <div style="padding:10px;border:1px solid #000;margin-top:10px;">
-            <h3>ORDER BERHASIL</h3>
-            <p><b>Order ID:</b> ${docRef.id}</p>
-            <p><b>Nama:</b> ${orderData.customer.name}</p>
-            <p><b>Meja:</b> ${orderData.table.number}</p>
-            <p><b>Lokasi:</b> ${orderData.restaurant.location}</p>
-
-            <hr>
-
-            <p><b>Pesanan:</b></p>
-            <ul>
-              <li>Nasi Rawon x1 (8000)</li>
-              <li>Es Teh x1 (3000)</li>
-            </ul>
-
-            <p><b>Total:</b> Rp ${orderData.summary.grandTotal}</p>
-
-            <p><b>Status:</b> 🟡 ${orderData.status}</p>
-            <p><b>Payment:</b> ❌ ${orderData.payment.status}</p>
-          </div>
-        `;
-
-        form.reset();
-
-      } catch (error) {
-        console.error(error);
-        alert("Gagal kirim pesanan!");
-      }
-    });
-
-  </script>
+  document.getElementById("orderBox").innerHTML = html;
+}
+</script>
 
 </body>
 </html>
