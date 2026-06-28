@@ -400,6 +400,8 @@ let restaurants={};
 
 
 let cart=[];
+let stopOrder=null;
+
 function loadMeja(){
 
 let html = '<option value="">Pilih Nomor Meja</option>';
@@ -470,35 +472,13 @@ loadRestaurant();
 
 
 window.gantiRestoran=function(){
-
-
-restaurantId =
-document.getElementById("restoSelect").value;
-
-
-
-cart=[];
-
-
-renderCart();
-
-
-showRestaurant();
-
-
-loadMenu();
-
-
+    restaurantId = document.getElementById("restoSelect").value;
+    cart=[];
+    renderCart();
+    showRestaurant();
+    loadMenu();
+    loadOrders();
 };
-
-
-
-
-
-
-
-
-
 // ==========================
 // INFO RESTORAN
 // ==========================
@@ -818,36 +798,43 @@ let total = cart.reduce(
 
 );
 
-
-
-
-
 await addDoc(
 
-collection(db,"orders"),
+collection(
+db,
+"restaurants",
+restaurantId,
+"orders"
+),
 
 {
 
+restaurantId:restaurantId,
 
-restaurantId,
+
+restaurantName:
+restaurants[restaurantId].name,
+
+
 customerName: document.getElementById("nama").value,
 phone: document.getElementById("phone").value,
-tableNumber:
-document.getElementById("meja").value,
+tableNumber: document.getElementById("meja").value,
+
+
+items:cart,
+
+
+totalPrice: total,
+
+
 status:"Pending",
-totalPrice:total,
 
 
 createdAt:serverTimestamp()
 
-
 }
 
-
 );
-
-
-
 cart=[];
 
 
@@ -863,48 +850,68 @@ document.getElementById("pesanStatus").innerHTML = "✅ Pesanan berhasil";
 
 
 function loadOrders(){
+if(stopOrder){
+stopOrder();
+}
 
 
 
-onSnapshot(
+stopOrder = onSnapshot(
 
-collection(db,"orders"),
+collection(
+db,
+"restaurants",
+restaurantId,
+"orders"
+),
 
-snap=>{
 
+(snapshot)=>{
 
 
 let html="";
 
 
 
-snap.forEach(item=>{
+snapshot.forEach((doc)=>{
 
 
-
-let o=item.data();
-
-
-
-
-if(o.restaurantId != restaurantId)
-
-return;
-
-
+let o = doc.data();
 
 
 
 html += `
 
-
-
 <div class="card">
+
+<h3>
+👤 ${o.customerName}
+</h3>
+
+
+<p>
+📞 ${o.phone}
+</p>
+
+
+<p>
+🏪 Cabang :
+${restaurants[restaurantId].name}
+</p>
+
+
+
+<p>
+🪑 Meja :
+${o.tableNumber}
+</p>
+
 
 
 <h3>
 
-${o.customerName}
+Rp ${Number(o.totalPrice)
+.toLocaleString("id-ID")}
 
 </h3>
 
@@ -912,78 +919,37 @@ ${o.customerName}
 
 <p>
 
-Restoran :
+Status :
 
-${restaurants[restaurantId]?.name}
-
-</p>
-
-
-
-<p>
-
-Meja :
-
-${o.tableNumber}
-
-</p>
+<select 
+onchange="ubahStatus('${doc.id}',this.value)"
+>
 
 
-
-<p>
-
-Total :
-
-Rp ${Number(o.totalPrice).toLocaleString("id-ID")}
-
-</p>
-
-
-
-<p>
-
-Status:
-
-
-<select onchange="ubahStatus('${item.id}',this.value)">
-
-
-<option ${o.status=="Pending"?"selected":""}>
-
+<option 
+${o.status=="Pending"?"selected":""}>
 Pending
+</option>
 
+
+<option
+${o.status=="Diproses"?"selected":""}>
+Diproses
 </option>
 
 
 
-<option ${o.status=="Proses Masak"?"selected":""}>
-
-Proses Masak
-
-</option>
-
-
-
-<option ${o.status=="Siap Disajikan"?"selected":""}>
-
-Siap Disajikan
-
-</option>
-
-
-
-<option ${o.status=="Selesai"?"selected":""}>
-
+<option
+${o.status=="Selesai"?"selected":""}>
 Selesai
-
 </option>
-
 
 
 </select>
 
 
 </p>
+
 
 
 </div>
@@ -997,8 +963,9 @@ Selesai
 
 
 
+document.getElementById("ordersList").innerHTML =
+html || "Belum ada pesanan";
 
-document.getElementById("ordersList").innerHTML = html;
 
 
 }
@@ -1008,28 +975,13 @@ document.getElementById("ordersList").innerHTML = html;
 
 
 }
-
-
-
-
-
-window.ubahStatus=async(id,status)=>{
-
-
-await updateDoc(
-
-doc(db,"orders",id),
-
-{
-
-status
-
-}
-
-);
-
-
+window.ubahStatus = async(id,status)=>{
+  await updateDoc(
+    doc(db,"restaurants",restaurantId,"orders",id),
+    { status }
+  );
 };
+
 
 </script>
 </body>
