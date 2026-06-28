@@ -191,12 +191,27 @@ background:#e75480;
 
 <!-- Modal Tambah Customer -->
 <div class="modal-overlay" id="modalCustomer">
-  <div class="modal-box">
-    <h3>👤 Tambah Customer</h3>
-    <input id="cust-name" placeholder="Nama Customer *">
-    <input id="cust-phone" placeholder="Nomor HP *">
-    <p id="modalStatus" class="status" style="min-height:20px;"></p>
-    <div class="modal-actions">
+<div class="modal-box">
+<h3>👤 Tambah Customer</h3>
+<input id="cust-name" placeholder="Nama Customer *">
+<input id="cust-phone" placeholder="Nomor HP *">
+<p id="modalStatus" class="status"></p>
+<div class="modal-actions">
+<button onclick="simpanCustomer()">
+💾 Simpan
+</button>
+
+
+<button class="btn-batal" onclick="tutupModal()">
+Batal
+</button>
+
+</div>
+
+
+</div>
+
+</div>
       <button onclick="simpanCustomer()">💾 Simpan</button>
       <button class="btn-batal" onclick="tutupModal()">Batal</button>
     </div>
@@ -405,48 +420,51 @@ function renderCart() {
 // ============================
 // MODAL CUSTOMER
 // ============================
-window.bukaModal = function () {
-  document.getElementById("cust-name").value = "";
-  document.getElementById("cust-phone").value = "";
-  document.getElementById("cust-address").value = "";
-  document.getElementById("cust-email").value = "";
-  document.getElementById("cust-note").value = "";
-  document.getElementById("modalStatus").innerHTML = "";
-  document.getElementById("modalCustomer").classList.add("active");
-};
-
+window.bukaModal=function(){
+document.getElementById("cust-name").value="";
+document.getElementById("cust-phone").value="";
+document.getElementById("modalStatus").innerHTML="";
+document
+.getElementById("modalCustomer")
+.classList.add("active");
+}
 window.tutupModal = function () {
   document.getElementById("modalCustomer").classList.remove("active");
 };
 
-window.simpanCustomer = async function () {
-  let name = document.getElementById("cust-name").value.trim();
-  let phone = document.getElementById("cust-phone").value.trim();
-  let address = document.getElementById("cust-address").value.trim();
-  let email = document.getElementById("cust-email").value.trim();
-  let note = document.getElementById("cust-note").value.trim();
-
-  if (!name) { document.getElementById("modalStatus").innerHTML = "⚠️ Nama wajib diisi"; return; }
-  if (!phone) { document.getElementById("modalStatus").innerHTML = "⚠️ Nomor HP wajib diisi"; return; }
-
-  document.getElementById("modalStatus").innerHTML = "⏳ Menyimpan...";
-
-  try {
-    await addDoc(collection(db, "restaurants", restaurantId, "customers"), {
-      name,
-      phone,
-      address,
-      email,
-      note,
-      createdAt: serverTimestamp()
-    });
-    document.getElementById("modalStatus").innerHTML = "✅ Customer tersimpan";
-    setTimeout(() => tutupModal(), 800);
-  } catch (err) {
-    console.error("Gagal simpan customer:", err);
-    document.getElementById("modalStatus").innerHTML = "❌ Gagal menyimpan";
-  }
-};
+window.simpanCustomer = async function(){
+const name =
+document.getElementById("cust-name").value.trim();
+const phone =
+document.getElementById("cust-phone").value.trim();
+if(name=="" || phone==""){
+document.getElementById("modalStatus").innerHTML=
+"⚠️ Nama dan Nomor HP wajib diisi";
+return;
+}
+document.getElementById("modalStatus").innerHTML=
+"⏳ Menyimpan...";
+try{
+await addDoc(
+collection(db,"customers"),
+{
+name:name,
+phone:phone,
+createdAt:serverTimestamp()
+}
+);
+document.getElementById("modalStatus").innerHTML=
+"✅ Customer berhasil disimpan";
+setTimeout(()=>{
+tutupModal();
+},1000);
+}
+catch(error){
+console.error(error);
+document.getElementById("modalStatus").innerHTML=
+"❌ Gagal menyimpan";
+}
+}
 
 // ============================
 // CUSTOMERS REALTIME
