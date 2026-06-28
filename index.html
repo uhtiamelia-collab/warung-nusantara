@@ -1,257 +1,675 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Warung Nusantara</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warung Nusantara</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Poppins, sans-serif;
+    }
 
-body{
-background:linear-gradient(135deg,#ffe4ec,#fff0f5);
-color:#5a3038;
-}
+    body {
+      background: linear-gradient(135deg, #ffe4ec, #fff0f5);
+      color: #5a3038;
+      min-height: 100vh;
+    }
 
-header{
-background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
-padding:35px;
-text-align:center;
-border-radius:0 0 40px 40px;
-}
+    header {
+      background: linear-gradient(135deg, #ffb6c1, #ffc0cb);
+      padding: 35px 20px;
+      text-align: center;
+      border-radius: 0 0 40px 40px;
+      box-shadow: 0 12px 25px rgba(194, 24, 91, 0.12);
+    }
 
-header h1{color:#8b2f4d;font-size:38px;}
-header p{margin-top:5px;}
+    header h1 {
+      color: #8b2f4d;
+      font-size: clamp(30px, 5vw, 42px);
+      font-weight: 700;
+    }
 
-.container{
-width:90%;
-max-width:1100px;
-margin:40px auto;
-}
+    header p {
+      margin-top: 6px;
+      color: #7f3b50;
+    }
 
-.title{color:#a33b5c;margin-bottom:20px;}
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 40px auto;
+    }
 
-.menu-list{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:20px;
-}
+    .title {
+      color: #a33b5c;
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
 
-.card{
-background:white;
-border-radius:20px;
-overflow:hidden;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-transition:0.3s;
-}
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
 
-.card:hover{transform:translateY(-5px);}
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      transition: 0.3s;
+    }
 
-.card img{
-width:100%;
-height:180px;
-object-fit:cover;
-}
+    .card:hover {
+      transform: translateY(-5px);
+    }
 
-.card-body{padding:15px;}
+    .card img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      background: #fff7fa;
+    }
 
-.price{color:#e75480;font-weight:bold;margin-top:8px;}
+    .card-body {
+      padding: 16px;
+    }
 
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:10px;
-background:#e75480;
-color:white;
-cursor:pointer;
-font-weight:600;
-}
+    .card-body h3 {
+      color: #803049;
+      margin-bottom: 5px;
+    }
 
-button:hover{background:#c2185b;}
+    .category {
+      color: #9d6776;
+      font-size: 14px;
+      min-height: 22px;
+    }
 
-.form-box{
-margin-top:40px;
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-}
+    .price {
+      color: #e75480;
+      font-weight: 700;
+      margin-top: 8px;
+      font-size: 17px;
+    }
 
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:10px;
-border:1px solid #ffc0cb;
-outline:none;
-}
+    .availability {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-#status{
-margin-top:10px;
-color:#e75480;
-font-weight:bold;
-text-align:center;
-}
-</style>
+    .available {
+      color: #16a34a;
+    }
+
+    .not-available {
+      color: #dc2626;
+    }
+
+    button {
+      width: 100%;
+      padding: 11px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #e75480;
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #c2185b;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .form-box,
+    .orders-box {
+      margin-top: 40px;
+      background: #ffffff;
+      padding: 22px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-box h2,
+    .orders-box h2 {
+      color: #a33b5c;
+      margin-bottom: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ffc0cb;
+      outline: none;
+      color: #5a3038;
+    }
+
+    input:focus {
+      border-color: #e75480;
+      box-shadow: 0 0 0 4px rgba(231, 84, 128, 0.12);
+    }
+
+    #status {
+      margin-top: 12px;
+      color: #e75480;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .selected-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #fff4f8;
+      border: 1px dashed #ffc0cb;
+      color: #8b2f4d;
+      line-height: 1.6;
+    }
+
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .order-card {
+      border: 1px solid #ffd0dc;
+      background: #fff8fb;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .order-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .order-head h3 {
+      color: #803049;
+      font-size: 20px;
+    }
+
+    .badge {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pending {
+      background: #fff3cd;
+      color: #b7791f;
+    }
+
+    .cooking {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .ready {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .done {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .order-meta {
+      color: #754759;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .order-items {
+      margin-left: 18px;
+      color: #5a3038;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .status-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .btn-small {
+      margin-top: 0;
+      padding: 9px;
+      font-size: 12px;
+      border-radius: 9px;
+    }
+
+    .btn-done {
+      background: #6b7280;
+    }
+
+    .btn-done:hover {
+      background: #4b5563;
+    }
+
+    .empty {
+      padding: 16px;
+      background: #fff4f8;
+      border: 1px dashed #ffc0cb;
+      border-radius: 14px;
+      text-align: center;
+      color: #9d6776;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: #9d6776;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 92%;
+      }
+
+      .status-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <h1>🍽️ Warung Nusantara</h1>
+    <p>Cita rasa nusantara 💗</p>
+  </header>
 
-<header>
-<h1>🍽️ Warung Nusantara</h1>
-<p>Cita rasa nusantara 💗</p>
-</header>
+  <div class="container">
+    <h2 class="title">Menu Makanan</h2>
+    <div id="menuList" class="menu-list"></div>
 
-<div class="container">
+    <div class="form-box">
+      <h2>🛒 Form Pesanan</h2>
 
-<h2 class="title">Menu Makanan</h2>
-<div id="menuList" class="menu-list"></div>
+      <input id="nama" placeholder="Nama">
+      <input id="phone" placeholder="No HP">
+      <input id="meja" type="number" min="1" placeholder="Nomor Meja">
 
-<div class="form-box">
-<h2>🛒 Form Pesanan</h2>
+      <input id="menu" readonly placeholder="Menu dipilih">
+      <input id="jumlah" type="number" min="1" value="1" placeholder="Jumlah">
 
-<input id="nama" placeholder="Nama">
-<input id="phone" placeholder="No HP">
-<input id="meja" type="number" placeholder="Nomor Meja">
+      <div class="selected-box" id="selectedBox">
+        Belum ada menu yang dipilih.
+      </div>
 
-<input id="menu" readonly placeholder="Menu dipilih">
-<input id="jumlah" type="number" value="1">
+      <button id="btnPesan" onclick="pesan()">Pesan Sekarang 💗</button>
 
-<button onclick="pesan()">Pesan Sekarang 💗</button>
+      <p id="status"></p>
+    </div>
 
-<p id="status"></p>
-</div>
+    <div class="orders-box">
+      <h2>📋 Data Pesanan</h2>
+      <p class="note">
+        Data pesanan ditampilkan secara real-time. Saat tombol <b>Selesai</b> diklik,
+        data tidak dihapus, hanya field <b>status</b> yang berubah menjadi <b>done</b>.
+      </p>
+      <div id="ordersList" class="orders-grid"></div>
+    </div>
+  </div>
 
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-<script type="module">
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      doc,
+      setDoc,
+      getDocs,
+      updateDoc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getFirestore,
-collection,
-getDocs,
-addDoc,
-doc,
-setDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-m7sqOLaZ8b-bWLZEgVPTXT-Qp1vQIycQ",
+      authDomain: "warung-nusantara-9f331.firebaseapp.com",
+      projectId: "warung-nusantara-9f331",
+      storageBucket: "warung-nusantara-9f331.firebasestorage.app",
+      messagingSenderId: "68513276988",
+      appId: "1:68513276988:web:b13b148a51ce216efecf39"
+    };
 
-// FIREBASE CONFIG
-const firebaseConfig = {
-apiKey: "AIzaSyD-m7sqOLaZ8b-bWLZEgVPTXT-Qp1vQIycQ",
-authDomain: "warung-nusantara-9f331.firebaseapp.com",
-projectId: "warung-nusantara-9f331",
-storageBucket: "warung-nusantara-9f331.firebasestorage.app",
-messagingSenderId: "68513276988",
-appId: "1:68513276988:web:b13b148a51ce216efecf39"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const RESTAURANT_ID = "jombang01";
+    const RESTAURANT_NAME = "Warung Nusantara Jombang";
+    const RESTAURANT_ADDRESS = "Jl. Ahmad Yani No. 5";
+    const RESTAURANT_OPEN_HOURS = "08:00 - 21:00";
 
-let selectedMenu = null;
+    let selectedMenu = null;
+    let menus = [];
 
-// ================== LOAD MENU ==================
-async function loadMenu(){
-try{
+    const menuList = document.getElementById("menuList");
+    const ordersList = document.getElementById("ordersList");
+    const statusText = document.getElementById("status");
+    const selectedBox = document.getElementById("selectedBox");
+    const btnPesan = document.getElementById("btnPesan");
 
-const snap = await getDocs(
-collection(db,"restaurants","jombang01","menus")
-);
+    function formatRupiah(number) {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0
+      }).format(Number(number) || 0);
+    }
 
-const container = document.getElementById("menuList");
-container.innerHTML = "";
+    function safeText(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-snap.forEach(d => {
+    function setStatus(message) {
+      statusText.innerText = message;
+    }
 
-const m = d.data();
+    function makeCustomerId(name, phone) {
+      const cleanName = (name || "customer")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
 
-container.innerHTML += `
-<div class="card">
-<img src="${m.imageUrl || 'https://via.placeholder.com/300'}">
-<div class="card-body">
-<h3>${m.name}</h3>
-<p>${m.category}</p>
-<div class="price">Rp ${Number(m.price).toLocaleString()}</div>
+      const cleanPhone = (phone || "")
+        .replace(/[^0-9]/g, "")
+        .slice(-6);
 
-<button onclick="selectMenu('${d.id}','${m.name}',${m.price})">
-+ Pesan
-</button>
+      return `cust_${cleanName}_${cleanPhone || Date.now()}`;
+    }
 
-</div>
-</div>
-`;
-});
+    async function ensureRestaurantProfile() {
+      await setDoc(
+        doc(db, "restaurants", RESTAURANT_ID),
+        {
+          name: RESTAURANT_NAME,
+          address: RESTAURANT_ADDRESS,
+          openHours: RESTAURANT_OPEN_HOURS
+        },
+        { merge: true }
+      );
+    }
 
-if(snap.empty){
-container.innerHTML = "<p>Menu belum tersedia</p>";
-}
+    // ================== LOAD MENU REAL-TIME ==================
+    function loadMenu() {
+      try {
+        const menuRef = collection(db, "restaurants", RESTAURANT_ID, "menus");
 
-}catch(e){
-console.log(e);
-document.getElementById("menuList").innerHTML =
-"<p style='color:red'>Gagal load menu</p>";
-}
-}
+        onSnapshot(menuRef, (snap) => {
+          menus = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data()
+          }));
 
-loadMenu();
+          menuList.innerHTML = "";
 
-// ================== SELECT MENU ==================
-window.selectMenu = (id,name,price)=>{
-selectedMenu = {id,name,price};
-document.getElementById("menu").value = name;
-document.getElementById("status").innerText = "Dipilih: " + name;
-}
+          if (menus.length === 0) {
+            menuList.innerHTML = "<p class='empty'>Menu belum tersedia</p>";
+            return;
+          }
 
-// ================== PESAN ==================
-window.pesan = async ()=>{
+          menus.forEach((m) => {
+            const isAvailable = m.available !== false;
+            const price = Number(m.price) || 0;
 
-if(!selectedMenu){
-alert("Pilih menu dulu");
-return;
-}
+            menuList.innerHTML += `
+              <div class="card">
+                <img src="${safeText(m.imageUrl || 'https://via.placeholder.com/300')}">
+                <div class="card-body">
+                  <h3>${safeText(m.name)}</h3>
+                  <p class="category">${safeText(m.category || 'Menu')}</p>
+                  <div class="price">${formatRupiah(price)}</div>
+                  <div class="availability ${isAvailable ? 'available' : 'not-available'}">
+                    ${isAvailable ? 'Tersedia' : 'Tidak tersedia'}
+                  </div>
 
-const nama = document.getElementById("nama").value;
-const phone = document.getElementById("phone").value;
-const meja = document.getElementById("meja").value;
-const qty = Number(document.getElementById("jumlah").value);
+                  <button ${isAvailable ? '' : 'disabled'} onclick="selectMenu('${m.id}')">
+                    + Pesan
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+        });
+      } catch (e) {
+        console.error(e);
+        menuList.innerHTML = "<p class='empty' style='color:red'>Gagal load menu</p>";
+      }
+    }
 
-const customerId = "cust_" + Date.now();
+    // ================== SELECT MENU ==================
+    window.selectMenu = (id) => {
+      const menu = menus.find((m) => m.id === id);
 
-await setDoc(doc(db,"customers",customerId),{
-name:nama,
-phone:phone,
-loyaltyPoints:0
-});
+      if (!menu) {
+        alert("Menu tidak ditemukan");
+        return;
+      }
 
-const orderRef = await addDoc(collection(db,"orders"),{
-customerId,
-restaurantId:"jombang01",
-menuId:selectedMenu.id,
-status:"pending",
-tableNumber:meja,
-totalPrice:selectedMenu.price * qty,
-createdAt:serverTimestamp()
-});
+      selectedMenu = {
+        id: menu.id,
+        name: menu.name,
+        price: Number(menu.price) || 0
+      };
 
-await addDoc(collection(db,"orders",orderRef.id,"orderItems"),{
-menuId:selectedMenu.id,
-menuName:selectedMenu.name,
-qty,
-unitPrice:selectedMenu.price,
-subtotal:selectedMenu.price * qty
-});
+      document.getElementById("menu").value = selectedMenu.name;
+      selectedBox.innerHTML = `
+        <b>Menu dipilih:</b> ${safeText(selectedMenu.name)}<br>
+        <b>Harga:</b> ${formatRupiah(selectedMenu.price)}
+      `;
+      setStatus("Dipilih: " + selectedMenu.name);
+    };
 
-document.getElementById("status").innerText =
-"✅ Pesanan berhasil dikirim 💗";
-};
+    // ================== PESAN ==================
+    window.pesan = async () => {
+      if (!selectedMenu) {
+        alert("Pilih menu dulu");
+        return;
+      }
 
-</script>
+      const nama = document.getElementById("nama").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const meja = Number(document.getElementById("meja").value);
+      const qty = Number(document.getElementById("jumlah").value);
 
+      if (!nama || !phone || !meja || !qty || qty < 1) {
+        alert("Lengkapi nama, nomor HP, nomor meja, dan jumlah pesanan.");
+        return;
+      }
+
+      try {
+        btnPesan.disabled = true;
+        btnPesan.innerText = "Mengirim pesanan...";
+
+        const totalPrice = selectedMenu.price * qty;
+        const customerId = makeCustomerId(nama, phone);
+        const customerRef = doc(db, "customers", customerId);
+        const restaurantRef = doc(db, "restaurants", RESTAURANT_ID);
+
+        await setDoc(
+          customerRef,
+          {
+            name: nama,
+            phone: phone,
+            loyaltyPoints: 0
+          },
+          { merge: true }
+        );
+
+        const orderRef = await addDoc(collection(db, "orders"), {
+          customerId: customerRef,
+          restaurantId: restaurantRef,
+          restaurantKey: RESTAURANT_ID,
+          restaurantName: RESTAURANT_NAME,
+          tableNumber: meja,
+          status: "pending",
+          totalPrice: totalPrice,
+          createdAt: serverTimestamp(),
+          customerName: nama,
+          customerPhone: phone
+        });
+
+        await addDoc(collection(db, "orders", orderRef.id, "orderItems"), {
+          menuId: selectedMenu.id,
+          menuName: selectedMenu.name,
+          qty: qty,
+          unitPrice: selectedMenu.price,
+          subtotal: totalPrice
+        });
+
+        document.getElementById("nama").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("meja").value = "";
+        document.getElementById("jumlah").value = 1;
+        document.getElementById("menu").value = "";
+        selectedMenu = null;
+        selectedBox.innerHTML = "Belum ada menu yang dipilih.";
+
+        setStatus("✅ Pesanan berhasil dikirim dan tersimpan di Firestore 💗");
+      } catch (error) {
+        console.error(error);
+        setStatus("❌ Gagal menyimpan pesanan. Cek Firebase Rules atau koneksi internet.");
+      } finally {
+        btnPesan.disabled = false;
+        btnPesan.innerText = "Pesan Sekarang 💗";
+      }
+    };
+
+    // ================== DATA PESANAN REAL-TIME ==================
+    function loadOrdersRealtime() {
+      const orderQuery = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+
+      onSnapshot(orderQuery, async (snap) => {
+        const orders = snap.docs
+          .map((d) => ({
+            id: d.id,
+            ...d.data()
+          }))
+          // PENTING: jangan filter status !== "done".
+          // Data selesai tetap ditampilkan. Yang berubah hanya status-nya.
+          .filter((order) => {
+            const refPath = order.restaurantId?.path;
+            return (
+              order.restaurantKey === RESTAURANT_ID ||
+              order.restaurantId === RESTAURANT_ID ||
+              refPath === `restaurants/${RESTAURANT_ID}`
+            );
+          });
+
+        if (orders.length === 0) {
+          ordersList.innerHTML = "<div class='empty'>Belum ada pesanan masuk.</div>";
+          return;
+        }
+
+        const orderCards = await Promise.all(
+          orders.map(async (order) => {
+            const itemSnap = await getDocs(collection(db, "orders", order.id, "orderItems"));
+            const items = itemSnap.docs.map((itemDoc) => itemDoc.data());
+
+            const itemList = items.length
+              ? items.map((item) => `
+                  <li>
+                    ${safeText(item.menuName)} x ${Number(item.qty) || 0}
+                    — ${formatRupiah(item.subtotal)}
+                  </li>
+                `).join("")
+              : "<li>Item belum tersedia</li>";
+
+            const status = order.status || "pending";
+
+            return `
+              <div class="order-card">
+                <div class="order-head">
+                  <h3>Meja ${safeText(order.tableNumber || "-")}</h3>
+                  <span class="badge ${safeText(status)}">${safeText(status)}</span>
+                </div>
+
+                <div class="order-meta">
+                  Pelanggan: <b>${safeText(order.customerName || "-")}</b><br>
+                  No HP: <b>${safeText(order.customerPhone || "-")}</b><br>
+                  Total: <b>${formatRupiah(order.totalPrice)}</b>
+                </div>
+
+                <ul class="order-items">
+                  ${itemList}
+                </ul>
+
+                <div class="status-actions">
+                  <button class="btn-small" onclick="updateStatus('${order.id}', 'pending')">Pending</button>
+                  <button class="btn-small" onclick="updateStatus('${order.id}', 'cooking')">Diproses</button>
+                  <button class="btn-small" onclick="updateStatus('${order.id}', 'ready')">Siap</button>
+                  <button class="btn-small btn-done" onclick="updateStatus('${order.id}', 'done')">Selesai</button>
+                </div>
+              </div>
+            `;
+          })
+        );
+
+        ordersList.innerHTML = orderCards.join("");
+      });
+    }
+
+    // ================== UPDATE STATUS ==================
+    window.updateStatus = async (orderId, status) => {
+      try {
+        await updateDoc(doc(db, "orders", orderId), {
+          status: status,
+          updatedAt: serverTimestamp(),
+          completedAt: status === "done" ? serverTimestamp() : null
+        });
+
+        setStatus(`✅ Status pesanan berhasil diubah menjadi ${status}. Data tetap tersimpan.`);
+      } catch (error) {
+        console.error(error);
+        setStatus("❌ Gagal mengubah status pesanan.");
+      }
+    };
+
+    await ensureRestaurantProfile();
+    loadMenu();
+    loadOrdersRealtime();
+  </script>
 </body>
 </html>
