@@ -410,41 +410,24 @@ let selectedMenu=null;
 
 
 // ======================
-// TAMPIL SEMUA MENU
+// TAMPIL MENU JOMBANG
 // ======================
 
-
 async function tampilMenu(){
+
+try{
 
 
 let html="";
 
 
-
-const restoran = await getDocs(
-
-collection(db,"restaurants")
-
-);
-
-
-
-for(const resto of restoran.docs){
-
-
-
 const menus = await getDocs(
 
 collection(
-
 db,
-
 "restaurants",
-
-resto.id,
-
+"jombang01",
 "menus"
-
 )
 
 );
@@ -461,23 +444,18 @@ const menu=item.data();
 html += `
 
 
-<div class="card"
-
-onclick="pilihMenu(
-'${item.id}',
-'${menu.name}',
-${menu.price}
-)">
+<div class="card">
 
 
-<img src="${menu.imageUrl}">
-
+<img src="${menu.imageUrl || 'https://via.placeholder.com/300'}">
 
 
 <div class="card-body">
 
 
-<h3>${menu.name}</h3>
+<h3>
+${menu.name}
+</h3>
 
 
 <p>
@@ -486,17 +464,28 @@ ${menu.category}
 
 
 <p class="price">
-
-Rp ${menu.price}
-
+Rp ${menu.price.toLocaleString()}
 </p>
 
 
 
-<small>
-${resto.id}
-</small>
+<p style="color:#e75480">
 
+Tersedia
+
+</p>
+
+
+<button 
+onclick="pilihMenu(
+'${item.id}',
+'${menu.name}',
+${menu.price}
+)">
+
++ Pesan 💗
+
+</button>
 
 
 </div>
@@ -508,18 +497,29 @@ ${resto.id}
 `;
 
 
+
 });
 
 
+
+document.getElementById("menuList").innerHTML = html;
+
+
+
+}
+
+catch(error){
+
+console.log(
+"Error menu:",
+error
+);
+
+
 }
 
 
-
-document.getElementById("menuList").innerHTML=html;
-
-
 }
-
 
 
 tampilMenu();
@@ -527,37 +527,35 @@ tampilMenu();
 
 
 
-
-
-
+// ======================
 // PILIH MENU
-
+// ======================
 
 window.pilihMenu=(id,name,price)=>{
 
 
 selectedMenu={
 
-id,
+id:id,
 
-name,
+name:name,
 
-price
+price:Number(price)
 
 };
+
 
 
 document.getElementById("menu").value=name;
 
 
 
-document.getElementById("status").innerHTML=
+document.getElementById("status").innerHTML =
 
 "💗 Dipilih : "+name;
 
 
 };
-
 
 
 
