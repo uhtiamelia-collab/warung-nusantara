@@ -240,12 +240,9 @@ placeholder="Nama Customer">
 placeholder="Nomor HP">
 
 
-<input id="meja"
-placeholder="Nomor Meja">
-
-
-
-
+<select id="meja">
+<option value="">Pilih Nomor Meja</option>
+</select>
 
 <div class="card">
 
@@ -403,13 +400,19 @@ let restaurants={};
 
 
 let cart=[];
+function loadMeja(){
 
+let html = '<option value="">Pilih Nomor Meja</option>';
 
+for(let i=1; i<=200; i++){
 
+html += `<option value="${i}">Meja ${i}</option>`;
 
+}
 
+document.getElementById("meja").innerHTML = html;
 
-
+}
 // ==========================
 // AMBIL DATA RESTORAN
 // ==========================
@@ -417,86 +420,42 @@ let cart=[];
 
 async function loadRestaurant(){
 
-
-
 const snap = await getDocs(
-
 collection(db,"restaurants")
-
 );
-
-
 
 let html="";
 
-
-
 snap.forEach((item)=>{
-
 
 let r=item.data();
 
-
-
 restaurants[item.id]=r;
 
-
-
 html += `
-
 <option value="${item.id}">
-
 ${r.name}
-
 </option>
-
-
 `;
-
-
 
 });
 
-
-
-
-
 document.getElementById("restoSelect").innerHTML=html;
 
-
-
-
-
 // DEFAULT JOMBANG
-
 if(restaurants["jombang01"]){
-
-
 restaurantId="jombang01";
-
-
 document.getElementById("restoSelect").value="jombang01";
-
-
 }
-
 
 showRestaurant();
-
-
 loadMenu();
-
-
 loadOrders();
 
-
-
 }
-
-
-
-
+loadMeja();
 loadRestaurant();
+
 
 
 
@@ -839,13 +798,14 @@ window.checkout=async()=>{
 
 
 if(cart.length==0){
-
 alert("Pilih menu dulu");
-
 return;
-
 }
 
+if(document.getElementById("meja").value==""){
+alert("Pilih nomor meja dulu");
+return;
+}
 
 
 
@@ -870,26 +830,11 @@ collection(db,"orders"),
 
 
 restaurantId,
-
-
-customerName:
-
-nama.value,
-
-
-phone:
-
-phone.value,
-
-
+customerName: document.getElementById("nama").value,
+phone: document.getElementById("phone").value,
 tableNumber:
-
-meja.value,
-
-
+document.getElementById("meja").value,
 status:"Pending",
-
-
 totalPrice:total,
 
 
@@ -909,20 +854,8 @@ cart=[];
 renderCart();
 
 
-pesanStatus.innerHTML="✅ Pesanan berhasil";
-
-
-
+document.getElementById("pesanStatus").innerHTML = "✅ Pesanan berhasil";
 };
-
-
-
-
-
-
-
-
-
 // ==========================
 // DATA ORDER REALTIME
 // ==========================
@@ -1065,8 +998,7 @@ Selesai
 
 
 
-ordersList.innerHTML=html;
-
+document.getElementById("ordersList").innerHTML = html;
 
 
 }
@@ -1099,14 +1031,6 @@ status
 
 };
 
-
-
-
-
-
 </script>
-
-
 </body>
-
 </html>
