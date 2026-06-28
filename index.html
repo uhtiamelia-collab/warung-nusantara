@@ -1,314 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Warung Nusantara</title>
-
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-
-<style>
-
-
-*{
-box-sizing:border-box;
-font-family:Poppins,sans-serif;
-}
-
-
-body{
-
-margin:0;
-background:#fff0f5;
-color:#5a3038;
-
-}
-
-
-
-header{
-
-background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
-
-padding:35px;
-
-text-align:center;
-
-color:#8b2f4d;
-
-border-radius:0 0 40px 40px;
-
-}
-
-
-
-.container{
-
-width:90%;
-max-width:1100px;
-
-margin:30px auto;
-
-}
-
-
-
-.card{
-
-background:white;
-
-padding:20px;
-
-border-radius:20px;
-
-margin:15px 0;
-
-box-shadow:0 5px 20px rgba(0,0,0,.1);
-
-}
-
-
-
-.grid{
-
-display:grid;
-
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-
-gap:20px;
-
-}
-
-
-
-img{
-
-width:100%;
-
-height:200px;
-
-object-fit:cover;
-
-border-radius:15px;
-
-}
-
-
-
-button{
-
-width:100%;
-
-padding:12px;
-
-background:#e75480;
-
-color:white;
-
-border:0;
-
-border-radius:15px;
-
-cursor:pointer;
-
-}
-
-
-
-button:hover{
-
-background:#c2185b;
-
-}
-
-
-
-input,select{
-
-width:100%;
-
-padding:12px;
-
-margin:8px 0;
-
-border-radius:10px;
-
-border:1px solid pink;
-
-}
-
-
-
-.status{
-
-color:#e75480;
-
-font-weight:bold;
-
-}
-
-
-
-#ordersList{
-
-max-height:450px;
-
-overflow-y:auto;
-
-}
-
-
-</style>
-
-</head>
-
-
-<body>
-
-
-
-<header>
-
-<h1>
-🍽️ Warung Nusantara
-</h1>
-
-<p>
-Sistem Pemesanan Digital Firestore
-</p>
-
-
-</header>
-
-
-
-
-<div class="container">
-
-
-
-<h2>Pilih Lokasi Restoran</h2>
-
-
-
-<select id="restoSelect"
-onchange="gantiRestoran()">
-
-</select>
-
-
-
-
-<div class="card" id="restoInfo">
-
-Loading...
-
-</div>
-
-
-
-
-
-<h2>Menu</h2>
-
-
-<div id="menuList" class="grid">
-
-</div>
-
-
-
-
-
-
-
-<h2>
-🛒 Pesanan
-</h2>
-
-
-<input id="nama"
-placeholder="Nama Customer">
-
-
-<input id="phone"
-placeholder="Nomor HP">
-
-
-<input id="meja"
-placeholder="Nomor Meja">
-
-
-
-
-
-<div class="card">
-
-
-<h3>
-Keranjang
-</h3>
-
-
-<div id="cartBox">
-
-Kosong
-
-</div>
-
-
-
-<h3 id="total">
-
-Total Rp 0
-
-</h3>
-
-
-<button onclick="checkout()">
-
-Kirim Pesanan
-
-</button>
-
-
-<p id="pesanStatus"
-class="status">
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-<h2>
-📦 Data Pesanan
-</h2>
-
-
-
-<div id="ordersList">
-
-</div>
-
-
-
-
-</div>
-
 <script type="module">
-
 
 import {initializeApp}
 from
@@ -334,8 +24,6 @@ from
 
 
 
-
-
 const firebaseConfig={
 
 
@@ -357,6 +45,7 @@ appId:"1:68513276988:web:b13b148a51ce216efecf39"
 
 const app=initializeApp(firebaseConfig);
 
+
 const db=getFirestore(app);
 
 
@@ -371,8 +60,6 @@ let stopOrder=null;
 
 
 
-
-
 const restoSelect=document.getElementById("restoSelect");
 
 const restoInfo=document.getElementById("restoInfo");
@@ -381,11 +68,9 @@ const menuList=document.getElementById("menuList");
 
 const cartBox=document.getElementById("cartBox");
 
-const total=document.getElementById("total");
+const totalBox=document.getElementById("total");
 
 const ordersList=document.getElementById("ordersList");
-
-
 
 
 
@@ -402,14 +87,14 @@ const pesanStatus=document.getElementById("pesanStatus");
 
 
 // ===============================
-// LOAD CABANG
+// LOAD RESTAURANT
 // ===============================
 
 
 async function loadRestaurant(){
 
 
-let snap=await getDocs(
+let snap = await getDocs(
 collection(db,"restaurants")
 );
 
@@ -426,12 +111,10 @@ restaurants[d.id]=d.data();
 
 
 
-html+=`
+html += `
 
 <option value="${d.id}">
-
 ${d.data().name}
-
 </option>
 
 `;
@@ -446,8 +129,6 @@ restoSelect.innerHTML=html;
 
 
 
-// DEFAULT
-
 restaurantId="jombang01";
 
 
@@ -457,9 +138,7 @@ restoSelect.value=restaurantId;
 
 tampilRestoran();
 
-
 loadMenu();
-
 
 loadOrders();
 
@@ -476,8 +155,6 @@ loadRestaurant();
 
 
 
-
-
 // ===============================
 // GANTI CABANG
 // ===============================
@@ -485,21 +162,35 @@ loadRestaurant();
 
 window.gantiRestoran=function(){
 
+
 restaurantId=restoSelect.value;
+
 
 cart=[];
 
+
 renderCart();
+
+
 
 tampilRestoran();
 
+
 loadMenu();
+
 
 loadOrders();
 
+
+
 }
+
+
+
+
+
 // ===============================
-// INFO RESTO
+// INFO CABANG
 // ===============================
 
 
@@ -509,29 +200,25 @@ function tampilRestoran(){
 let r=restaurants[restaurantId];
 
 
+if(!r)return;
+
+
 
 restoInfo.innerHTML=`
 
 <h2>
-
 🍽️ ${r.name}
-
 </h2>
 
 
 <p>
-
 📍 ${r.address || "-"}
-
 </p>
 
 
 <p>
-
 Status :
-
 ${r.status || "Buka"}
-
 </p>
 
 
@@ -540,6 +227,10 @@ ${r.status || "Buka"}
 
 
 }
+
+
+
+
 
 
 // ===============================
@@ -551,11 +242,12 @@ async function loadMenu(){
 
 
 
-menuList.innerHTML="Loading...";
+menuList.innerHTML="Loading menu...";
 
 
 
-let snap=await getDocs(
+let snap = await getDocs(
+
 
 collection(
 
@@ -568,6 +260,7 @@ restaurantId,
 "menus"
 
 )
+
 
 );
 
@@ -584,11 +277,15 @@ let m=d.data();
 
 
 
-let harga=Number(m.price);
+let harga=Number(
+
+m.price ?? 0
+
+);
 
 
 
-html+=`
+html += `
 
 
 <div class="card">
@@ -611,15 +308,22 @@ Rp ${harga.toLocaleString("id-ID")}
 </p>
 
 
-<button onclick="tambah(${JSON.stringify(m.name)},${harga})">
+
+<button 
+
+class="btnPesan"
+
+data-nama="${m.name}"
+
+data-harga="${harga}">
 
 + Pesan
 
 </button>
 
 
-</div>
 
+</div>
 
 
 `;
@@ -634,36 +338,33 @@ menuList.innerHTML=html || "Menu kosong";
 
 
 
+
+
+// AKTIFKAN BUTTON PESAN
+
+document.querySelectorAll(".btnPesan")
+.forEach(btn=>{
+
+
+btn.onclick=function(){
+
+
+tambah(
+
+btn.dataset.nama,
+
+Number(btn.dataset.harga)
+
+);
+
+
 }
 
-
-
-
-
-
-
-
-// ===============================
-// TAMBAH CART
-// ===============================
-
-
-
-window.tambah=function(nama,harga){
-
-
-cart.push({
-
-name:nama,
-
-price:harga
 
 
 });
 
 
-renderCart();
-
 
 }
 
@@ -671,6 +372,47 @@ renderCart();
 
 
 
+
+
+// ===============================
+// TAMBAH KERANJANG
+// ===============================
+
+
+function tambah(namaMenu,harga){
+
+
+cart.push({
+
+
+name:namaMenu,
+
+
+price:harga
+
+
+
+});
+
+
+
+renderCart();
+
+
+
+}
+
+
+window.tambah=tambah;
+
+
+
+
+
+
+// ===============================
+// TAMPIL CART
+// ===============================
 
 
 function renderCart(){
@@ -678,27 +420,30 @@ function renderCart(){
 
 let html="";
 
-let totalHarga=0;
+
+let total=0;
 
 
 
-cart.forEach(i=>{
+cart.forEach(item=>{
 
 
-html+=`
+html += `
 
 <p>
 
-${i.name}
+${item.name}
 
-Rp ${i.price.toLocaleString("id-ID")}
+Rp ${item.price.toLocaleString("id-ID")}
 
 </p>
+
 
 `;
 
 
-totalHarga+=i.price;
+
+total += item.price;
 
 
 
@@ -706,12 +451,15 @@ totalHarga+=i.price;
 
 
 
-cartBox.innerHTML=html || "Kosong";
+cartBox.innerHTML=
+
+html || "Kosong";
 
 
-total.innerHTML=
 
-"Total Rp "+totalHarga.toLocaleString("id-ID");
+totalBox.innerHTML=
+
+"Total Rp "+total.toLocaleString("id-ID");
 
 
 
@@ -723,10 +471,8 @@ total.innerHTML=
 
 
 
-
-
 // ===============================
-// KIRIM ORDER CABANG
+// CHECKOUT
 // ===============================
 
 
@@ -736,26 +482,43 @@ window.checkout=async function(){
 
 if(cart.length==0){
 
+
 alert("Pilih menu dulu");
 
+
 return;
+
 
 }
 
 
 
 
-if(!nama.value || !phone.value || !meja.value){
 
-alert("Data customer belum lengkap");
+if(
+
+nama.value.trim()=="" ||
+
+phone.value.trim()=="" ||
+
+meja.value.trim()==""
+
+){
+
+
+alert("Isi data customer dulu");
+
 
 return;
+
 
 }
 
 
 
-let totalHarga=cart.reduce(
+
+
+let totalHarga = cart.reduce(
 
 (a,b)=>a+b.price,
 
@@ -785,21 +548,30 @@ restaurantId,
 
 {
 
+
 restaurantId:restaurantId,
+
 
 customerName:nama.value,
 
+
 phone:phone.value,
+
 
 tableNumber:meja.value,
 
+
 items:cart,
+
 
 totalPrice:totalHarga,
 
+
 status:"Pending",
 
+
 createdAt:serverTimestamp()
+
 
 }
 
@@ -811,11 +583,9 @@ createdAt:serverTimestamp()
 
 
 
-alert(
+pesanStatus.innerHTML=
 
-"Pesanan masuk ke "+restaurants[restaurantId].name
-
-);
+"✅ Pesanan masuk "+restaurants[restaurantId].name;
 
 
 
@@ -826,8 +596,7 @@ renderCart();
 
 
 
-};
-
+}
 
 
 
@@ -837,9 +606,8 @@ renderCart();
 
 
 // ===============================
-// TAMPIL ORDER SESUAI CABANG
+// ORDER SESUAI CABANG
 // ===============================
-
 
 
 function loadOrders(){
@@ -854,7 +622,9 @@ stopOrder();
 
 
 
-stopOrder=onSnapshot(
+
+
+stopOrder = onSnapshot(
 
 
 collection(
@@ -885,7 +655,8 @@ let o=d.data();
 
 
 
-html+=`
+html += `
+
 
 
 <div class="card">
@@ -898,6 +669,7 @@ html+=`
 </h3>
 
 
+
 <p>
 
 📞 ${o.phone}
@@ -908,22 +680,28 @@ html+=`
 
 <p>
 
-Meja : ${o.tableNumber}
+🪑 Meja :
+
+${o.tableNumber}
 
 </p>
+
 
 
 <p>
 
 Total :
 
-Rp ${o.totalPrice.toLocaleString("id-ID")}
+Rp ${Number(o.totalPrice)
+.toLocaleString("id-ID")}
 
 </p>
 
 
 
-<select onchange="ubahStatus('${d.id}',this.value)">
+<select 
+
+onchange="ubahStatus('${d.id}',this.value)">
 
 
 
@@ -934,11 +712,13 @@ Pending
 </option>
 
 
+
 <option ${o.status=="Proses Masak"?"selected":""}>
 
 Proses Masak
 
 </option>
+
 
 
 <option ${o.status=="Selesai"?"selected":""}>
@@ -948,11 +728,12 @@ Selesai
 </option>
 
 
-
 </select>
 
 
+
 </div>
+
 
 
 `;
@@ -979,10 +760,15 @@ html || "Belum ada pesanan";
 
 }
 
+
+
+
+
+
+
 // ===============================
 // UPDATE STATUS
 // ===============================
-
 
 
 window.ubahStatus=async function(id,status){
@@ -1009,22 +795,22 @@ id
 
 {
 
+
 status:status
 
+
 }
+
+
 
 );
 
 
 
-};
+}
+
 
 
 
 
 </script>
-
-
-</body>
-
-</html>
