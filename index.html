@@ -8,10 +8,12 @@
 
 <title>Warung Nusantara</title>
 
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 
 <style>
+
 
 *{
 box-sizing:border-box;
@@ -28,6 +30,7 @@ color:#5a3038;
 }
 
 
+
 header{
 
 background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
@@ -35,6 +38,8 @@ background:linear-gradient(135deg,#ffb6c1,#ffc0cb);
 padding:35px;
 
 text-align:center;
+
+color:#8b2f4d;
 
 border-radius:0 0 40px 40px;
 
@@ -45,7 +50,6 @@ border-radius:0 0 40px 40px;
 .container{
 
 width:90%;
-
 max-width:1100px;
 
 margin:30px auto;
@@ -116,6 +120,14 @@ cursor:pointer;
 
 
 
+button:hover{
+
+background:#c2185b;
+
+}
+
+
+
 input,select{
 
 width:100%;
@@ -132,134 +144,47 @@ border:1px solid pink;
 
 
 
+.status{
+
+color:#e75480;
+
+font-weight:bold;
+
+}
+
+
+
 #ordersList{
 
-max-height:400px;
+max-height:450px;
 
 overflow-y:auto;
 
 }
 
 
-
-/* MODAL */
-
-
-.modal{
-
-display:none;
-
-position:fixed;
-
-top:0;
-
-left:0;
-
-width:100%;
-
-height:100%;
-
-background:rgba(0,0,0,.5);
-
-align-items:center;
-
-justify-content:center;
-
-}
-
-
-.modal.active{
-
-display:flex;
-
-}
-
-
-.modal-box{
-
-background:white;
-
-padding:30px;
-
-border-radius:20px;
-
-width:90%;
-
-max-width:400px;
-
-}
-
-
-
-.modal-btn{
-
-display:flex;
-
-gap:10px;
-
-}
-
-
 </style>
 
-
 </head>
-
 
 
 <body>
 
 
+
 <header>
 
-<h1>🍽️ Warung Nusantara</h1>
+<h1>
+🍽️ Warung Nusantara
+</h1>
 
-<p>Sistem Pemesanan Digital Firestore</p>
+<p>
+Sistem Pemesanan Digital Firestore
+</p>
+
 
 </header>
 
-
-
-<!-- MODAL CUSTOMER -->
-
-<div class="modal" id="modalCustomer">
-
-<div class="modal-box">
-
-<h3>👤 Tambah Customer</h3>
-
-
-<input id="custName" placeholder="Nama Customer">
-
-
-<input id="custPhone" placeholder="Nomor HP">
-
-
-<p id="modalStatus"></p>
-
-
-<div class="modal-btn">
-
-<button onclick="simpanCustomer()">
-
-💾 Simpan
-
-</button>
-
-
-<button onclick="tutupModal()">
-
-Batal
-
-</button>
-
-
-</div>
-
-
-</div>
-
-</div>
 
 
 
@@ -270,7 +195,12 @@ Batal
 <h2>Pilih Lokasi Restoran</h2>
 
 
-<select id="restoSelect" onchange="gantiRestoran()"></select>
+
+<select id="restoSelect"
+onchange="gantiRestoran()">
+
+</select>
+
 
 
 
@@ -282,51 +212,47 @@ Loading...
 
 
 
+
+
 <h2>Menu</h2>
 
 
-<div id="menuList" class="grid"></div>
+<div id="menuList" class="grid">
+
+</div>
 
 
 
 
-<h2>🛒 Pesanan</h2>
-
-
-<button onclick="bukaModal()">
-
-+ Tambah Customer
-
-</button>
 
 
 
-<select id="customerSelect">
-
-<option>
-
--- Customer --
-
-</option>
-
-</select>
+<h2>
+🛒 Pesanan
+</h2>
 
 
-
-<input id="nama" placeholder="Nama Customer">
-
-
-<input id="phone" placeholder="Nomor HP">
+<input id="nama"
+placeholder="Nama Customer">
 
 
-<input id="meja" placeholder="Nomor Meja">
+<input id="phone"
+placeholder="Nomor HP">
+
+
+<input id="meja"
+placeholder="Nomor Meja">
+
+
 
 
 
 <div class="card">
 
 
-<h3>Keranjang</h3>
+<h3>
+Keranjang
+</h3>
 
 
 <div id="cartBox">
@@ -336,12 +262,12 @@ Kosong
 </div>
 
 
+
 <h3 id="total">
 
 Total Rp 0
 
 </h3>
-
 
 
 <button onclick="checkout()">
@@ -351,22 +277,38 @@ Kirim Pesanan
 </button>
 
 
-<p id="pesanStatus"></p>
+<p id="pesanStatus"
+class="status">
 
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+<h2>
+📦 Data Pesanan
+</h2>
+
+
+
+<div id="ordersList">
 
 </div>
 
 
 
 
-<h2>📦 Data Pesanan</h2>
-
-
-<div id="ordersList"></div>
-
-
-
 </div>
+
+
+
 
 
 
@@ -382,6 +324,7 @@ from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 
+
 import {
 
 getFirestore,
@@ -392,9 +335,9 @@ getDocs,
 
 addDoc,
 
-onSnapshot,
-
 serverTimestamp,
+
+onSnapshot,
 
 doc,
 
@@ -408,47 +351,78 @@ from
 
 
 
-const firebaseConfig={
 
 
-apiKey:"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
 
-authDomain:"warung-nusantara-9f331.firebaseapp.com",
 
-projectId:"warung-nusantara-9f331",
+const firebaseConfig = {
 
-storageBucket:"warung-nusantara-9f331.firebasestorage.app",
 
-messagingSenderId:"68513276988",
+apiKey:
+"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
 
-appId:"1:68513276988:web:b13b148a51ce216efecf39"
 
+authDomain:
+"warung-nusantara-9f331.firebaseapp.com",
+
+
+projectId:
+"warung-nusantara-9f331",
+
+
+storageBucket:
+"warung-nusantara-9f331.firebasestorage.app",
+
+
+messagingSenderId:
+"68513276988",
+
+
+appId:
+"1:68513276988:web:b13b148a51ce216efecf39"
 
 };
 
 
 
-const app=initializeApp(firebaseConfig);
 
 
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+
+
+const db = getFirestore(app);
+
+
 
 
 
 let restaurantId="jombang01";
 
-let restoran={};
+
+let restaurants={};
+
 
 let cart=[];
-// ===============================
-// LOAD RESTORAN
-// ===============================
 
-async function loadRestoran(){
+
+
+
+
+
+
+// ==========================
+// AMBIL DATA RESTORAN
+// ==========================
+
+
+async function loadRestaurant(){
+
 
 
 const snap = await getDocs(
+
 collection(db,"restaurants")
+
 );
 
 
@@ -457,28 +431,33 @@ let html="";
 
 
 
-snap.forEach(doc=>{
+snap.forEach((item)=>{
 
 
-let r=doc.data();
+let r=item.data();
 
 
-restoran[doc.id]=r;
+
+restaurants[item.id]=r;
 
 
 
 html += `
 
-<option value="${doc.id}">
+<option value="${item.id}">
 
 ${r.name}
 
 </option>
 
+
 `;
 
 
+
 });
+
+
 
 
 
@@ -486,23 +465,27 @@ document.getElementById("restoSelect").innerHTML=html;
 
 
 
+
+
 // DEFAULT JOMBANG
 
-if(restoran["jombang01"]){
+if(restaurants["jombang01"]){
+
 
 restaurantId="jombang01";
 
+
 document.getElementById("restoSelect").value="jombang01";
+
 
 }
 
 
+showRestaurant();
 
-tampilRestoran();
 
 loadMenu();
 
-loadCustomer();
 
 loadOrders();
 
@@ -512,18 +495,22 @@ loadOrders();
 
 
 
-loadRestoran();
+
+loadRestaurant();
 
 
 
 
-// ===============================
-// GANTI RESTORAN
-// ===============================
+
+
+
+
+// ==========================
+// PINDAH RESTORAN
+// ==========================
 
 
 window.gantiRestoran=function(){
-
 
 
 restaurantId =
@@ -537,34 +524,33 @@ cart=[];
 renderCart();
 
 
-tampilRestoran();
+showRestaurant();
 
 
 loadMenu();
 
 
-loadCustomer();
-
-
-loadOrders();
-
-
-}
+};
 
 
 
 
 
 
-// ===============================
+
+
+
+// ==========================
 // INFO RESTORAN
-// ===============================
+// ==========================
 
 
-function tampilRestoran(){
+function showRestaurant(){
 
 
-let r=restoran[restaurantId];
+
+let r=restaurants[restaurantId];
+
 
 
 if(!r)return;
@@ -573,17 +559,14 @@ if(!r)return;
 
 document.getElementById("restoInfo").innerHTML=`
 
+
 <h2>
-
 🍽️ ${r.name}
-
 </h2>
 
 
 <p>
-
 📍 ${r.address || "-"}
-
 </p>
 
 
@@ -617,16 +600,21 @@ ${r.status || "Buka"}
 
 
 
-// ===============================
-// LOAD MENU
-// ===============================
+
+
+
+
+// ==========================
+// MENU
+// ==========================
 
 
 async function loadMenu(){
 
 
 
-let snap = await getDocs(
+const snap = await getDocs(
+
 
 collection(
 
@@ -640,7 +628,10 @@ restaurantId,
 
 )
 
+
 );
+
+
 
 
 
@@ -648,25 +639,23 @@ let html="";
 
 
 
-snap.forEach(doc=>{
-
-
-let m=doc.data();
+snap.forEach((item)=>{
 
 
 
+let m=item.data();
 
-// perbaikan harga rawon
+
+
+
 
 let harga = Number(
 
-m.price ||
+m.price ??
 
-m.harga ||
+m.harga ??
 
-m.priceMenu ||
-
-m.Harga ||
+m.priceMenu ??
 
 0
 
@@ -675,31 +664,29 @@ m.Harga ||
 
 
 
-// perbaikan gambar
 
 let gambar =
 
-m.imageUrl ||
+m.imageUrl ??
 
-m.image ||
+m.image ??
 
-m.photo ||
-
-m.gambar ||
+m.photo ??
 
 "https://via.placeholder.com/300";
 
 
 
 
-html+=`
+
+html += `
+
+
 
 <div class="card">
 
 
-<img src="${gambar}"
-
-onerror="this.src='https://via.placeholder.com/300'">
+<img src="${gambar}">
 
 
 <h3>
@@ -711,7 +698,7 @@ ${m.name}
 
 <p>
 
-${m.category || "Menu"}
+${m.category}
 
 </p>
 
@@ -724,6 +711,7 @@ Rp ${harga.toLocaleString("id-ID")}
 </p>
 
 
+
 <button onclick="tambah('${m.name}',${harga})">
 
 + Pesan
@@ -731,7 +719,9 @@ Rp ${harga.toLocaleString("id-ID")}
 </button>
 
 
+
 </div>
+
 
 
 `;
@@ -742,9 +732,8 @@ Rp ${harga.toLocaleString("id-ID")}
 
 
 
-document.getElementById("menuList").innerHTML =
 
-html || "Menu kosong";
+document.getElementById("menuList").innerHTML=html;
 
 
 
@@ -756,50 +745,31 @@ html || "Menu kosong";
 
 
 
-// ===============================
+
+
+// ==========================
 // KERANJANG
-// ===============================
+// ==========================
 
 
 window.tambah=function(name,price){
-
-
-let ada = cart.find(
-
-x=>x.name==name
-
-);
-
-
-
-if(ada){
-
-ada.qty++;
-
-}
-
-else{
 
 
 cart.push({
 
 name,
 
-price,
-
-qty:1
+price
 
 });
-
-
-}
-
 
 
 renderCart();
 
 
+
 }
+
 
 
 
@@ -810,37 +780,27 @@ function renderCart(){
 
 let html="";
 
-let totalHarga=0;
+let total=0;
 
 
 
 cart.forEach(item=>{
 
 
-let subtotal=item.price*item.qty;
-
-
-totalHarga+=subtotal;
-
-
-
-html+=`
+html += `
 
 <p>
 
 ${item.name}
 
-x ${item.qty}
-
-=
-
-Rp ${subtotal.toLocaleString("id-ID")}
+Rp ${item.price.toLocaleString("id-ID")}
 
 </p>
 
-
 `;
 
+
+total += item.price;
 
 
 });
@@ -855,7 +815,7 @@ html || "Kosong";
 
 document.getElementById("total").innerHTML=
 
-"Total Rp "+totalHarga.toLocaleString("id-ID");
+"Total Rp "+total.toLocaleString("id-ID");
 
 
 
@@ -865,253 +825,17 @@ document.getElementById("total").innerHTML=
 
 
 
-// ===============================
-// MODAL CUSTOMER
-// ===============================
 
 
-window.bukaModal=function(){
 
 
-document
+// ==========================
+// SIMPAN ORDER
+// ==========================
 
-.getElementById("modalCustomer")
 
-.classList.add("active");
+window.checkout=async()=>{
 
-
-}
-
-
-
-window.tutupModal=function(){
-
-
-document
-
-.getElementById("modalCustomer")
-
-.classList.remove("active");
-
-
-}
-
-
-
-
-// ===============================
-// SIMPAN CUSTOMER
-// ===============================
-
-
-window.simpanCustomer=async function(){
-
-
-
-let nama =
-
-document.getElementById("custName").value.trim();
-
-
-
-let hp =
-
-document.getElementById("custPhone").value.trim();
-
-
-
-
-if(nama=="" || hp==""){
-
-
-modalStatus.innerHTML=
-
-"Nama dan HP wajib";
-
-
-return;
-
-
-}
-
-
-
-try{
-
-
-await addDoc(
-
-collection(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"customers"
-
-),
-
-
-{
-
-
-name:nama,
-
-phone:hp,
-
-createdAt:serverTimestamp()
-
-
-}
-
-
-);
-
-
-
-modalStatus.innerHTML=
-
-"✅ Berhasil disimpan";
-
-
-
-setTimeout(()=>{
-
-
-tutupModal();
-
-
-loadCustomer();
-
-
-
-},1000);
-
-
-
-}
-
-catch(e){
-
-
-console.log(e);
-
-
-modalStatus.innerHTML=
-
-"❌ Gagal menyimpan";
-
-
-}
-
-
-
-}
-
-
-
-
-
-// ===============================
-// CUSTOMER DROPDOWN
-// ===============================
-
-
-async function loadCustomer(){
-
-
-
-let snap = await getDocs(
-
-collection(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"customers"
-
-)
-
-);
-
-
-
-let html=
-
-`
-
-<option>
-
--- Pilih Customer --
-
-</option>
-
-`;
-
-
-
-snap.forEach(doc=>{
-
-
-let c=doc.data();
-
-
-
-html+=`
-
-<option
-
-data-name="${c.name}"
-
-data-phone="${c.phone}"
-
->
-
-${c.name}
-
--
-
-${c.phone}
-
-</option>
-
-`;
-
-
-
-});
-
-
-
-document.getElementById("customerSelect").innerHTML=html;
-
-
-
-}
-
-
-
-customerSelect.onchange=function(){
-
-
-let data=this.options[this.selectedIndex];
-
-
-nama.value=data.dataset.name || "";
-
-
-phone.value=data.dataset.phone || "";
-}
-// ===============================
-// CHECKOUT PESANAN
-// ===============================
-
-window.checkout = async function(){
 
 
 if(cart.length==0){
@@ -1123,48 +847,57 @@ return;
 }
 
 
-let total =
-cart.reduce(
-(a,b)=>a+(b.price*b.qty),
+
+
+
+let total = cart.reduce(
+
+(a,b)=>a+b.price,
+
 0
+
 );
+
+
 
 
 
 await addDoc(
 
-collection(
-db,
-"restaurants",
-restaurantId,
-"orders"
-),
-
+collection(db,"orders"),
 
 {
 
-restaurantId:restaurantId,
 
-customerName:nama.value,
-
-phone:phone.value,
-
-tableNumber:meja.value,
+restaurantId,
 
 
-items:cart,
+customerName:
+
+nama.value,
 
 
-totalPrice:total,
+phone:
+
+phone.value,
+
+
+tableNumber:
+
+meja.value,
 
 
 status:"Pending",
+
+
+totalPrice:total,
 
 
 createdAt:serverTimestamp()
 
 
 }
+
 
 );
 
@@ -1176,15 +909,11 @@ cart=[];
 renderCart();
 
 
-pesanStatus.innerHTML=
-"✅ Pesanan berhasil";
+pesanStatus.innerHTML="✅ Pesanan berhasil";
 
 
 
-loadOrders();
-
-
-}
+};
 
 
 
@@ -1192,9 +921,12 @@ loadOrders();
 
 
 
-// ===============================
-// LOAD ORDER SESUAI RESTORAN
-// ===============================
+
+
+// ==========================
+// DATA ORDER REALTIME
+// ==========================
+
 
 
 function loadOrders(){
@@ -1203,36 +935,43 @@ function loadOrders(){
 
 onSnapshot(
 
-collection(
-db,
-"restaurants",
-restaurantId,
-"orders"
-),
+collection(db,"orders"),
 
+snap=>{
 
-(snapshot)=>{
 
 
 let html="";
 
 
 
-snapshot.forEach(doc=>{
-
-
-let o=doc.data();
+snap.forEach(item=>{
 
 
 
-html+=`
+let o=item.data();
+
+
+
+
+if(o.restaurantId != restaurantId)
+
+return;
+
+
+
+
+
+html += `
+
+
 
 <div class="card">
 
 
 <h3>
 
-👤 ${o.customerName}
+${o.customerName}
 
 </h3>
 
@@ -1240,46 +979,78 @@ html+=`
 
 <p>
 
-📞 ${o.phone}
+Restoran :
+
+${restaurants[restaurantId]?.name}
 
 </p>
 
 
-<p>
-
-🍽️ Restoran :
-
-${restoran[restaurantId].name}
-
-</p>
-
 
 <p>
 
-🪑 Meja :
+Meja :
 
 ${o.tableNumber}
 
 </p>
 
 
-<h3>
 
-Rp ${Number(o.totalPrice)
-.toLocaleString("id-ID")}
+<p>
 
-</h3>
+Total :
+
+Rp ${Number(o.totalPrice).toLocaleString("id-ID")}
+
+</p>
 
 
 
 <p>
 
-Status :
+Status:
 
-${o.status}
+
+<select onchange="ubahStatus('${item.id}',this.value)">
+
+
+<option ${o.status=="Pending"?"selected":""}>
+
+Pending
+
+</option>
+
+
+
+<option ${o.status=="Proses Masak"?"selected":""}>
+
+Proses Masak
+
+</option>
+
+
+
+<option ${o.status=="Siap Disajikan"?"selected":""}>
+
+Siap Disajikan
+
+</option>
+
+
+
+<option ${o.status=="Selesai"?"selected":""}>
+
+Selesai
+
+</option>
+
+
+
+</select>
+
 
 </p>
-
 
 
 </div>
@@ -1288,19 +1059,54 @@ ${o.status}
 `;
 
 
+
 });
 
 
 
-document.getElementById("ordersList").innerHTML=
 
-html || "Belum ada pesanan";
+ordersList.innerHTML=html;
+
 
 
 }
-
 
 );
 
 
+
 }
+
+
+
+
+
+window.ubahStatus=async(id,status)=>{
+
+
+await updateDoc(
+
+doc(db,"orders",id),
+
+{
+
+status
+
+}
+
+);
+
+
+};
+
+
+
+
+
+
+</script>
+
+
+</body>
+
+</html>
