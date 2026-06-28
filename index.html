@@ -1,378 +1,185 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Warung Nusantara</title>
-
-<style>
-*{
-  box-sizing:border-box;
-  font-family:'Segoe UI',sans-serif;
-}
-
-body{
-  margin:0;
-  background:url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200') center/cover fixed;
-}
-
-.overlay{
-  background:rgba(0,0,0,.65);
-  min-height:100vh;
-  padding:25px;
-}
-
-.container{
-  width:90%;
-  max-width:1200px;
-  margin:auto;
-  color:white;
-}
-
-h1{
-  text-align:center;
-  color:#ffe7b0;
-  text-shadow:0 0 10px rgba(255,200,120,.4);
-}
-
-h2{
-  text-align:center;
-  color:#ffdca8;
-}
-
-.card{
-  background:rgba(255,248,235,.96);
-  color:#2b1e14;
-  padding:18px;
-  margin:15px 0;
-  border-radius:18px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:18px;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#8b5e3c;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#a06b44;
-}
-
-input,select{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:1px solid #ddd;
-}
-
-img{
-  width:100%;
-  height:170px;
-  object-fit:cover;
-  border-radius:12px;
-}
-
-.status{
-  font-weight:bold;
-  color:#8b5e3c;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Warung Nusantara - Order System</title>
 </head>
 
 <body>
 
-<div class="overlay">
-<div class="container">
+  <h2>🍽️ Form Pesanan Warung Nusantara</h2>
 
-<h1>🍽️ Warung Nusantara</h1>
+  <!-- =========================
+       FORM ORDER
+  ========================== -->
+  <form id="orderForm">
 
-<h2>Restoran</h2>
-<select id="restoSelect"></select>
+    <input type="text" id="customerName" placeholder="Nama Pelanggan" required />
+    <br><br>
 
-<div id="restoInfo" class="card"></div>
+    <input type="text" id="phone" placeholder="No HP" />
+    <br><br>
 
-<h2>Menu</h2>
-<div id="menuList" class="grid"></div>
+    <select id="lokasi">
+      <option value="Bojonegoro">Bojonegoro</option>
+      <option value="Jombang">Jombang</option>
+    </select>
+    <br><br>
 
-<h2>Pesanan</h2>
-<input id="nama" placeholder="Nama Pelanggan">
-<input id="phone" placeholder="No HP">
-<select id="meja"></select>
+    <input type="number" id="meja" placeholder="Nomor Meja" />
+    <br><br>
 
-<div class="card">
-<h3>Keranjang</h3>
-<div id="cartBox">Kosong</div>
-<h3 id="total">Total Rp 0</h3>
-<button onclick="checkout()">Kirim Pesanan</button>
-</div>
+    <textarea id="note" placeholder="Catatan (optional)"></textarea>
+    <br><br>
 
-<h2>📦 Orders</h2>
-<div id="ordersList"></div>
+    <button type="submit">Kirim Pesanan</button>
 
-</div>
-</div>
+  </form>
 
-<script type="module">
+  <hr>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  where,
-  doc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <h3>📦 Status Order:</h3>
+  <div id="output"></div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
-  authDomain: "warung-nusantara-9f331.firebaseapp.com",
-  projectId: "warung-nusantara-9f331",
-  storageBucket: "warung-nusantara-9f331.firebasestorage.app",
-  messagingSenderId: "68513276988",
-  appId: "1:68513276988:web:b13b148a51ce216efecf39"
-};
+  <!-- =========================
+       FIREBASE + LOGIC
+  ========================== -->
+  <script type="module">
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-let restaurantId="";
-let restaurants={};
-let cart=[];
-let unsubscribe=null;
+    // =========================
+    // CONFIG FIREBASE
+    // =========================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+    };
 
-/* ======================
-   RESTO
-====================== */
-async function loadRestaurant(){
-  const snap = await getDocs(collection(db,"restaurants"));
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  let html="";
-  snap.forEach(d=>{
-    restaurants[d.id]=d.data();
-    html += `<option value="${d.id}">${d.data().name}</option>`;
-  });
+    const form = document.getElementById("orderForm");
+    const output = document.getElementById("output");
 
-  document.getElementById("restoSelect").innerHTML=html;
-  restaurantId=Object.keys(restaurants)[0];
+    // =========================
+    // SUBMIT ORDER
+    // =========================
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  showResto();
-  loadMenu();
-  loadOrders();
-}
+      // =========================
+      // DATA ORDER LENGKAP
+      // =========================
+      const orderData = {
+        orderId: crypto.randomUUID(),
+        orderNumber: "ORD-" + Date.now(),
 
-document.getElementById("restoSelect").addEventListener("change",(e)=>{
-  restaurantId=e.target.value;
-  cart=[];
-  renderCart();
-  showResto();
-  loadMenu();
-  loadOrders();
-});
+        customer: {
+          name: document.getElementById("customerName").value,
+          phone: document.getElementById("phone").value
+        },
 
-function showResto(){
-  let r=restaurants[restaurantId];
-  if(!r) return;
+        restaurant: {
+          name: "Warung Nusantara",
+          location: document.getElementById("lokasi").value
+        },
 
-  document.getElementById("restoInfo").innerHTML=`
-    <h2>${r.name}</h2>
-    <p>${r.address}</p>
-    <p>${r.openHours}</p>
-  `;
-}
+        table: {
+          number: document.getElementById("meja").value || null,
+          code: "T" + document.getElementById("meja").value + "-BOJO"
+        },
 
-/* ======================
-   MEJA
-====================== */
-function loadMeja(){
-  let html='<option value="">Pilih Meja</option>';
-  for(let i=1;i<=20;i++){
-    html += `<option value="${i}">Meja ${i}</option>`;
-  }
-  document.getElementById("meja").innerHTML=html;
-}
-loadMeja();
+        orderType: "dine-in",
 
-/* ======================
-   MENU
-====================== */
-async function loadMenu(){
-  const snap = await getDocs(
-    collection(db,"restaurants",restaurantId,"menus")
-  );
+        items: [
+          {
+            menuId: "menu_001",
+            name: "Nasi Rawon",
+            qty: 1,
+            price: 8000,
+            subtotal: 8000
+          },
+          {
+            menuId: "menu_002",
+            name: "Es Teh",
+            qty: 1,
+            price: 3000,
+            subtotal: 3000
+          }
+        ],
 
-  let html="";
+        summary: {
+          subtotal: 11000,
+          grandTotal: 11000
+        },
 
-  snap.forEach(d=>{
-    let m=d.data();
-    if(!m.available) return;
+        status: "pending",
+        // pending → masak → siap → selesai
 
-    html += `
-    <div class="card">
-      <img src="${m.imageUrl}">
-      <h3>${m.name}</h3>
-      <p>${m.category}</p>
-      <p>Rp ${m.price.toLocaleString("id-ID")}</p>
-      <button onclick="add('${m.name}',${m.price})">+ Pesan</button>
-    </div>
-    `;
-  });
+        payment: {
+          status: "unpaid",
+          method: "cash"
+        },
 
-  document.getElementById("menuList").innerHTML=html;
-}
+        note: document.getElementById("note").value,
 
-/* ======================
-   CART
-====================== */
-window.add = (name,price)=>{
-  cart.push({name,price});
-  renderCart();
-}
+        timing: {
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          estimatedMinutes: 15
+        }
+      };
 
-function renderCart(){
-  let html="";
-  let total=0;
+      try {
+        // =========================
+        // KIRIM KE FIREBASE
+        // =========================
+        const docRef = await addDoc(collection(db, "orders"), orderData);
 
-  cart.forEach(i=>{
-    html += `<p>${i.name} - Rp ${i.price}</p>`;
-    total += i.price;
-  });
+        // =========================
+        // OUTPUT DISPLAY
+        // =========================
+        output.innerHTML = `
+          <div style="padding:10px;border:1px solid #000;margin-top:10px;">
+            <h3>ORDER BERHASIL</h3>
+            <p><b>Order ID:</b> ${docRef.id}</p>
+            <p><b>Nama:</b> ${orderData.customer.name}</p>
+            <p><b>Meja:</b> ${orderData.table.number}</p>
+            <p><b>Lokasi:</b> ${orderData.restaurant.location}</p>
 
-  document.getElementById("cartBox").innerHTML=html || "Kosong";
-  document.getElementById("total").innerHTML="Total Rp "+total.toLocaleString("id-ID");
-}
+            <hr>
 
-/* ======================
-   CHECKOUT
-====================== */
-window.checkout = async ()=>{
+            <p><b>Pesanan:</b></p>
+            <ul>
+              <li>Nasi Rawon x1 (8000)</li>
+              <li>Es Teh x1 (3000)</li>
+            </ul>
 
-  if(cart.length===0){
-    alert("Keranjang kosong");
-    return;
-  }
+            <p><b>Total:</b> Rp ${orderData.summary.grandTotal}</p>
 
-  let nama=document.getElementById("nama").value;
-  let phone=document.getElementById("phone").value;
-  let meja=document.getElementById("meja").value;
-
-  if(!nama || !meja){
-    alert("Lengkapi data");
-    return;
-  }
-
-  let total=cart.reduce((a,b)=>a+b.price,0);
-
-  const orderRef = await addDoc(collection(db,"orders"),{
-    customerName:nama,
-    phone:phone,
-    restaurantId,
-    restaurantName:restaurants[restaurantId].name,
-    tableNumber:Number(meja),
-    status:"Pending",
-    totalPrice:total,
-    createdAt:serverTimestamp()
-  });
-
-  for(let i of cart){
-    await addDoc(collection(db,"orders",orderRef.id,"orderItems"),{
-      menuName:i.name,
-      qty:1,
-      unitPrice:i.price,
-      subtotal:i.price
-    });
-  }
-
-  cart=[];
-  renderCart();
-  alert("Pesanan berhasil");
-};
-
-/* ======================
-   ORDERS DISPLAY
-====================== */
-async function loadOrders(){
-
-  if(unsubscribe) unsubscribe();
-
-  const q=query(
-    collection(db,"orders"),
-    where("restaurantId","==",restaurantId)
-  );
-
-  unsubscribe = onSnapshot(q, async(snapshot)=>{
-
-    let html="";
-
-    for(const d of snapshot.docs){
-      let o=d.data();
-
-      const itemsSnap = await getDocs(
-        collection(db,"orders",d.id,"orderItems")
-      );
-
-      let itemsHTML="";
-
-      itemsSnap.forEach(it=>{
-        let x=it.data();
-        itemsHTML += `
-          <div>
-            ${x.menuName} ×${x.qty} <br>
-            Rp ${x.subtotal.toLocaleString("id-ID")}
+            <p><b>Status:</b> 🟡 ${orderData.status}</p>
+            <p><b>Payment:</b> ❌ ${orderData.payment.status}</p>
           </div>
-          <hr>
         `;
-      });
 
-      html += `
-      <div class="card">
-        <h2>Meja ${o.tableNumber}</h2>
-        <p class="status">${o.status}</p>
+        form.reset();
 
-        <p><b>Lokasi:</b> ${o.restaurantName}</p>
-        <p><b>Pelanggan:</b> ${o.customerName}</p>
-        <p><b>Total:</b> Rp ${o.totalPrice.toLocaleString("id-ID")}</p>
+      } catch (error) {
+        console.error(error);
+        alert("Gagal kirim pesanan!");
+      }
+    });
 
-        <h4>Items:</h4>
-        ${itemsHTML}
-
-        <select onchange="changeStatus('${d.id}',this.value)">
-          <option value="Pending" ${o.status==="Pending"?"selected":""}>Pending</option>
-          <option value="Masak" ${o.status==="Masak"?"selected":""}>Masak</option>
-          <option value="Siap Saji" ${o.status==="Siap Saji"?"selected":""}>Siap Saji</option>
-          <option value="Selesai" ${o.status==="Selesai"?"selected":""}>Selesai</option>
-        </select>
-      </div>
-      `;
-    }
-
-    document.getElementById("ordersList").innerHTML=html || "Belum ada pesanan";
-  });
-}
-
-window.changeStatus = async(id,status)=>{
-  await updateDoc(doc(db,"orders",id),{status});
-};
-
-loadRestaurant();
-
-</script>
+  </script>
 
 </body>
 </html>
