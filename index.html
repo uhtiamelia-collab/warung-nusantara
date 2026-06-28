@@ -3,19 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<h1>🍽️ Warung Nusantara</h1>
+<title>Warung Nusantara</title>
 
-<div class="subtitle">
-  ✨ Sistem pemesanan digital - realtime
-</div>
-
-<div class="info-badge">
-  🔔 <span id="alamat">Alamat: Loading...</span>
-</div>
-
-<div class="info-badge">
-  🕒 Buka: 08.00 - 22.00 WIB
-</div>
 <style>
 *{
   box-sizing:border-box;
@@ -25,6 +14,37 @@
 body{
   margin:0;
   background:url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200') center/cover fixed;
+}
+
+/* HEADER AREA */
+h1{
+  text-align:center;
+  color:#ffe7b0;
+  text-shadow:0 0 10px rgba(255,200,120,.4);
+  margin-top:20px;
+}
+
+.subtitle{
+  text-align:center;
+  margin-top:-10px;
+  margin-bottom:10px;
+  color:#ffe7b0;
+  font-size:14px;
+  letter-spacing:1px;
+  opacity:0.9;
+}
+
+.info-badge{
+  background:rgba(255,255,255,0.15);
+  padding:8px 14px;
+  border-radius:50px;
+  margin:6px auto;
+  display:block;
+  width:fit-content;
+  color:#fff;
+  font-size:13px;
+  backdrop-filter: blur(6px);
+  box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
 .overlay{
@@ -38,12 +58,6 @@ body{
   max-width:1200px;
   margin:auto;
   color:white;
-}
-
-h1{
-  text-align:center;
-  color:#ffe7b0;
-  text-shadow:0 0 10px rgba(255,200,120,.4);
 }
 
 h2{
@@ -100,36 +114,27 @@ img{
   color:#8b5e3c;
 }
 </style>
-.subtitle{
-  text-align:center;
-  margin-top:-10px;
-  margin-bottom:10px;
-  color:#ffe7b0;
-  font-size:14px;
-  letter-spacing:1px;
-  opacity:0.9;
-}
-
-.info-badge{
-  background:rgba(255,255,255,0.15);
-  padding:8px 14px;
-  border-radius:50px;
-  margin:6px auto;
-  display:block;
-  width:fit-content;
-  color:#fff;
-  font-size:13px;
-  backdrop-filter: blur(6px);
-  box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
 </head>
 
 <body>
 
+<!-- HEADER ESTETIK -->
+<h1>🍽️ Warung Nusantara</h1>
+
+<div class="subtitle">
+  ✨ Sistem pemesanan digital - realtime
+</div>
+
+<div class="info-badge">
+  🔔 <span id="alamat">Alamat: Loading...</span>
+</div>
+
+<div class="info-badge">
+  🕒 Buka: 08.00 - 22.00 WIB
+</div>
+
 <div class="overlay">
 <div class="container">
-
-<h1>🍽️ Warung Nusantara</h1>
 
 <h2>Restoran</h2>
 <select id="restoSelect"></select>
@@ -190,9 +195,7 @@ let restaurants={};
 let cart=[];
 let unsubscribe=null;
 
-/* ======================
-   RESTO
-====================== */
+/* RESTO */
 async function loadRestaurant(){
   const snap = await getDocs(collection(db,"restaurants"));
 
@@ -228,11 +231,11 @@ function showResto(){
     <p>${r.address}</p>
     <p>${r.openHours}</p>
   `;
+
+  document.getElementById("alamat").innerText = "📍 " + r.address;
 }
 
-/* ======================
-   MEJA
-====================== */
+/* MEJA */
 function loadMeja(){
   let html='<option value="">Pilih Meja</option>';
   for(let i=1;i<=20;i++){
@@ -242,9 +245,7 @@ function loadMeja(){
 }
 loadMeja();
 
-/* ======================
-   MENU
-====================== */
+/* MENU */
 async function loadMenu(){
   const snap = await getDocs(
     collection(db,"restaurants",restaurantId,"menus")
@@ -270,9 +271,7 @@ async function loadMenu(){
   document.getElementById("menuList").innerHTML=html;
 }
 
-/* ======================
-   CART
-====================== */
+/* CART */
 window.add = (name,price)=>{
   cart.push({name,price});
   renderCart();
@@ -291,9 +290,7 @@ function renderCart(){
   document.getElementById("total").innerHTML="Total Rp "+total.toLocaleString("id-ID");
 }
 
-/* ======================
-   CHECKOUT
-====================== */
+/* CHECKOUT */
 window.checkout = async ()=>{
 
   if(cart.length===0){
@@ -337,9 +334,7 @@ window.checkout = async ()=>{
   alert("Pesanan berhasil");
 };
 
-/* ======================
-   ORDERS DISPLAY
-====================== */
+/* ORDERS */
 async function loadOrders(){
 
   if(unsubscribe) unsubscribe();
@@ -366,7 +361,7 @@ async function loadOrders(){
         let x=it.data();
         itemsHTML += `
           <div>
-            ${x.menuName} ×${x.qty} <br>
+            ${x.menuName} ×${x.qty}<br>
             Rp ${x.subtotal.toLocaleString("id-ID")}
           </div>
           <hr>
@@ -378,7 +373,6 @@ async function loadOrders(){
         <h2>Meja ${o.tableNumber}</h2>
         <p class="status">${o.status}</p>
 
-        <p><b>Lokasi:</b> ${o.restaurantName}</p>
         <p><b>Pelanggan:</b> ${o.customerName}</p>
         <p><b>Total:</b> Rp ${o.totalPrice.toLocaleString("id-ID")}</p>
 
