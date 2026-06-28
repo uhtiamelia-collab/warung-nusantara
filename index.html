@@ -306,13 +306,17 @@ class="status">
 
 
 </div>
+
 <script type="module">
+
 
 import {initializeApp}
 from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
+
 import {
+
 getFirestore,
 collection,
 getDocs,
@@ -321,12 +325,19 @@ serverTimestamp,
 onSnapshot,
 doc,
 updateDoc
+
 }
+
 from
+
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
+
+
+
 const firebaseConfig={
+
 
 apiKey:"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
 
@@ -343,6 +354,7 @@ appId:"1:68513276988:web:b13b148a51ce216efecf39"
 };
 
 
+
 const app=initializeApp(firebaseConfig);
 
 const db=getFirestore(app);
@@ -355,13 +367,11 @@ let restaurants={};
 
 let cart=[];
 
-let unsubscribeOrder=null;
+let stopOrder=null;
 
 
 
-const namaInput=document.getElementById("nama");
-const phoneInput=document.getElementById("phone");
-const mejaInput=document.getElementById("meja");
+
 
 const restoSelect=document.getElementById("restoSelect");
 
@@ -371,67 +381,92 @@ const menuList=document.getElementById("menuList");
 
 const cartBox=document.getElementById("cartBox");
 
-const totalBox=document.getElementById("total");
+const total=document.getElementById("total");
 
 const ordersList=document.getElementById("ordersList");
+
+
+
+
+
+const nama=document.getElementById("nama");
+
+const phone=document.getElementById("phone");
+
+const meja=document.getElementById("meja");
 
 const pesanStatus=document.getElementById("pesanStatus");
 
 
 
 
-// LOAD RESTORAN
+
+// ===============================
+// LOAD CABANG
+// ===============================
+
 
 async function loadRestaurant(){
 
 
-let snap =
-await getDocs(
+let snap=await getDocs(
 collection(db,"restaurants")
 );
+
 
 
 let html="";
 
 
+
 snap.forEach(d=>{
 
+
 restaurants[d.id]=d.data();
+
 
 
 html+=`
 
 <option value="${d.id}">
+
 ${d.data().name}
+
 </option>
 
 `;
 
+
+
 });
+
 
 
 restoSelect.innerHTML=html;
 
 
 
-if(restaurants["jombang01"]){
+// DEFAULT
 
 restaurantId="jombang01";
 
-restoSelect.value="jombang01";
 
-}
-
+restoSelect.value=restaurantId;
 
 
-showRestaurant();
+
+tampilRestoran();
+
 
 loadMenu();
+
 
 loadOrders();
 
 
+
 }
+
 
 
 loadRestaurant();
@@ -440,7 +475,12 @@ loadRestaurant();
 
 
 
+
+
+
+// ===============================
 // GANTI CABANG
+// ===============================
 
 
 window.gantiRestoran=function(){
@@ -449,55 +489,23 @@ window.gantiRestoran=function(){
 restaurantId=restoSelect.value;
 
 
+
 cart=[];
+
 
 renderCart();
 
 
-showRestaurant();
+
+tampilRestoran();
+
 
 loadMenu();
+
 
 loadOrders();
 
 
-};
-
-
-
-
-
-
-// INFO RESTORAN
-
-
-function showRestaurant(){
-
-
-let r=restaurants[restaurantId];
-
-
-if(!r)return;
-
-
-restoInfo.innerHTML=`
-
-<h2>
-🍽️ ${r.name}
-</h2>
-
-
-<p>
-📍 ${r.address || "-"}
-</p>
-
-
-<p>
-Status : ${r.status || "Buka"}
-</p>
-
-
-`;
 
 }
 
@@ -507,23 +515,82 @@ Status : ${r.status || "Buka"}
 
 
 
-// MENU
+
+// ===============================
+// INFO RESTO
+// ===============================
+
+
+function tampilRestoran(){
+
+
+let r=restaurants[restaurantId];
+
+
+
+restoInfo.innerHTML=`
+
+<h2>
+
+🍽️ ${r.name}
+
+</h2>
+
+
+<p>
+
+📍 ${r.address || "-"}
+
+</p>
+
+
+<p>
+
+Status :
+
+${r.status || "Buka"}
+
+</p>
+
+
+`;
+
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// LOAD MENU CABANG
+// ===============================
 
 
 async function loadMenu(){
 
 
-menuList.innerHTML="Loading menu...";
+
+menuList.innerHTML="Loading...";
 
 
-let snap =
-await getDocs(
+
+let snap=await getDocs(
 
 collection(
+
 db,
+
 "restaurants",
+
 restaurantId,
+
 "menus"
+
 )
 
 );
@@ -533,21 +600,20 @@ restaurantId,
 let html="";
 
 
+
 snap.forEach(d=>{
 
 
 let m=d.data();
 
 
-let harga=Number(
-m.price ??
-m.harga ??
-0
-);
+
+let harga=Number(m.price);
 
 
 
 html+=`
+
 
 <div class="card">
 
@@ -556,16 +622,20 @@ html+=`
 
 
 <h3>
+
 ${m.name}
+
 </h3>
 
 
 <p>
+
 Rp ${harga.toLocaleString("id-ID")}
+
 </p>
 
 
-<button onclick="tambah('${m.name}',${harga})">
+<button onclick="tambah(${JSON.stringify(m.name)},${harga})">
 
 + Pesan
 
@@ -573,6 +643,8 @@ Rp ${harga.toLocaleString("id-ID")}
 
 
 </div>
+
+
 
 `;
 
@@ -585,6 +657,7 @@ Rp ${harga.toLocaleString("id-ID")}
 menuList.innerHTML=html || "Menu kosong";
 
 
+
 }
 
 
@@ -594,7 +667,10 @@ menuList.innerHTML=html || "Menu kosong";
 
 
 
-// TAMBAH KERANJANG
+// ===============================
+// TAMBAH CART
+// ===============================
+
 
 
 window.tambah=function(nama,harga){
@@ -605,6 +681,7 @@ cart.push({
 name:nama,
 
 price:harga
+
 
 });
 
@@ -619,42 +696,47 @@ renderCart();
 
 
 
+
 function renderCart(){
 
 
 let html="";
 
-let total=0;
+let totalHarga=0;
 
 
 
-cart.forEach(item=>{
+cart.forEach(i=>{
 
 
 html+=`
 
 <p>
 
-${item.name}
+${i.name}
 
-Rp ${item.price.toLocaleString("id-ID")}
+Rp ${i.price.toLocaleString("id-ID")}
 
 </p>
 
 `;
 
 
-total += item.price;
+totalHarga+=i.price;
+
 
 
 });
 
 
+
 cartBox.innerHTML=html || "Kosong";
 
 
-totalBox.innerHTML=
-"Total Rp "+total.toLocaleString("id-ID");
+total.innerHTML=
+
+"Total Rp "+totalHarga.toLocaleString("id-ID");
+
 
 
 }
@@ -667,14 +749,16 @@ totalBox.innerHTML=
 
 
 
-// CHECKOUT
+// ===============================
+// KIRIM ORDER CABANG
+// ===============================
 
 
 window.checkout=async function(){
 
 
 
-if(cart.length===0){
+if(cart.length==0){
 
 alert("Pilih menu dulu");
 
@@ -684,13 +768,10 @@ return;
 
 
 
-if(
-namaInput.value.trim()==="" ||
-phoneInput.value.trim()==="" ||
-mejaInput.value.trim()===""
-){
 
-alert("Nama, HP dan meja wajib diisi");
+if(!nama.value || !phone.value || !meja.value){
+
+alert("Data customer belum lengkap");
 
 return;
 
@@ -698,7 +779,7 @@ return;
 
 
 
-let total = cart.reduce(
+let totalHarga=cart.reduce(
 
 (a,b)=>a+b.price,
 
@@ -708,7 +789,6 @@ let total = cart.reduce(
 
 
 
-try{
 
 
 await addDoc(
@@ -729,32 +809,35 @@ restaurantId,
 
 {
 
-
 restaurantId:restaurantId,
 
+customerName:nama.value,
 
-customerName:namaInput.value,
+phone:phone.value,
 
-
-phone:phoneInput.value,
-
-
-tableNumber:mejaInput.value,
-
+tableNumber:meja.value,
 
 items:cart,
 
-
-totalPrice:total,
-
+totalPrice:totalHarga,
 
 status:"Pending",
 
-
 createdAt:serverTimestamp()
 
-
 }
+
+
+
+);
+
+
+
+
+
+alert(
+
+"Pesanan masuk ke "+restaurants[restaurantId].name
 
 );
 
@@ -764,25 +847,6 @@ cart=[];
 
 
 renderCart();
-
-
-pesanStatus.innerHTML="✅ Pesanan berhasil dikirim";
-
-
-}
-
-
-
-catch(error){
-
-
-console.log(error);
-
-
-pesanStatus.innerHTML="❌ Gagal kirim pesanan";
-
-
-}
 
 
 
@@ -795,22 +859,26 @@ pesanStatus.innerHTML="❌ Gagal kirim pesanan";
 
 
 
-// ORDER PER RESTORAN
+
+// ===============================
+// TAMPIL ORDER SESUAI CABANG
+// ===============================
+
 
 
 function loadOrders(){
 
 
 
-if(unsubscribeOrder){
+if(stopOrder){
 
-unsubscribeOrder();
+stopOrder();
 
 }
 
 
 
-unsubscribeOrder = onSnapshot(
+stopOrder=onSnapshot(
 
 
 collection(
@@ -826,10 +894,12 @@ restaurantId,
 ),
 
 
+
 snap=>{
 
 
 let html="";
+
 
 
 snap.forEach(d=>{
@@ -841,60 +911,66 @@ let o=d.data();
 
 html+=`
 
+
 <div class="card">
 
 
 <h3>
+
 👤 ${o.customerName}
+
 </h3>
 
 
 <p>
+
 📞 ${o.phone}
+
 </p>
 
 
-<p>
-🍽️ Cabang :
-${restaurants[restaurantId].name}
-</p>
-
 
 <p>
-🪑 Meja :
-${o.tableNumber}
+
+Meja : ${o.tableNumber}
+
 </p>
 
 
 <p>
 
 Total :
-Rp ${Number(o.totalPrice).toLocaleString("id-ID")}
+
+Rp ${o.totalPrice.toLocaleString("id-ID")}
 
 </p>
+
 
 
 <select onchange="ubahStatus('${d.id}',this.value)">
 
 
+
 <option ${o.status=="Pending"?"selected":""}>
+
 Pending
+
 </option>
 
 
 <option ${o.status=="Proses Masak"?"selected":""}>
+
 Proses Masak
-</option>
 
-
-<option ${o.status=="Siap Disajikan"?"selected":""}>
-Siap Disajikan
 </option>
 
 
 <option ${o.status=="Selesai"?"selected":""}>
+
 Selesai
+
 </option>
+
 
 
 </select>
@@ -906,30 +982,39 @@ Selesai
 `;
 
 
+
 });
 
 
+
 ordersList.innerHTML=
+
 html || "Belum ada pesanan";
 
 
+
 }
+
 
 
 );
 
 
+
 }
 
-
-
+// ===============================
+// UPDATE STATUS
+// ===============================
 
 
 
 window.ubahStatus=async function(id,status){
 
 
+
 await updateDoc(
+
 
 doc(
 
@@ -945,6 +1030,7 @@ id
 
 ),
 
+
 {
 
 status:status
@@ -954,8 +1040,15 @@ status:status
 );
 
 
+
 };
 
 
 
+
 </script>
+
+
+</body>
+
+</html>
