@@ -156,24 +156,24 @@ const db = getFirestore(app);
 
 let selectedMenu = null;
 
+// ================== LOAD MENU ==================
 async function loadMenu(){
-
 try{
 
 const snap = await getDocs(
 collection(db,"restaurants","jombang01","menus")
 );
 
-let makanan = "";
-let minuman = "";
+const container = document.getElementById("menuList");
+container.innerHTML = "";
 
-snap.forEach(d=>{
+snap.forEach(d => {
 
 const m = d.data();
 
-const card = `
+container.innerHTML += `
 <div class="card">
-<img src="${m.imageUrl}">
+<img src="${m.imageUrl || 'https://via.placeholder.com/300'}">
 <div class="card-body">
 <h3>${m.name}</h3>
 <p>${m.category}</p>
@@ -186,30 +186,21 @@ const card = `
 </div>
 </div>
 `;
-
-if(m.category && m.category.toLowerCase().includes("minum")){
-minuman += card;
-}else{
-makanan += card;
-}
-
 });
 
-document.getElementById("menuList").innerHTML = `
-<h2>Makanan 🍽️</h2>
-<div class="menu-list">${makanan}</div>
-
-<h2 style="margin-top:30px">Minuman 🥤</h2>
-<div class="menu-list">${minuman}</div>
-`;
+if(snap.empty){
+container.innerHTML = "<p>Menu belum tersedia</p>";
+}
 
 }catch(e){
 console.log(e);
 document.getElementById("menuList").innerHTML =
-"Gagal load menu";
+"<p style='color:red'>Gagal load menu</p>";
+}
 }
 
-}
+loadMenu();
+
 // ================== SELECT MENU ==================
 window.selectMenu = (id,name,price)=>{
 selectedMenu = {id,name,price};
