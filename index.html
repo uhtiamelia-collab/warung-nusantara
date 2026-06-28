@@ -6,109 +6,60 @@
 <title>Warung Nusantara</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family:'Segoe UI',sans-serif;
-}
-
+*{box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 body{
   margin:0;
-  background:
-  linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
+  background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
   url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200');
   background-size:cover;
   background-position:center;
   background-attachment:fixed;
 }
-
-.overlay{
-  min-height:100vh;
-  padding:30px;
-}
-
 .container{
   width:90%;
   max-width:1200px;
   margin:auto;
-  color:#fff;
+  color:white;
+  padding:20px;
 }
-
-h1{
-  text-align:center;
-  font-size:42px;
-  color:#fff3d4;
-  text-shadow:0 0 15px rgba(255,220,150,.5);
-}
-
-h2{
-  text-align:center;
-  color:#ffe7b2;
-  margin-top:30px;
-}
-
+h1,h2{text-align:center;}
 .card{
   background:rgba(255,248,235,0.95);
-  backdrop-filter:blur(10px);
   color:#3b2a1f;
-  padding:22px;
-  margin:18px 0;
-  border-radius:22px;
-  box-shadow:0 10px 30px rgba(0,0,0,.18);
+  padding:20px;
+  margin:15px 0;
+  border-radius:20px;
 }
-
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
   gap:20px;
 }
-
 button{
   width:100%;
-  padding:14px;
+  padding:12px;
   border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#c08b5c,#8b5e3c);
+  border-radius:12px;
+  background:#8b5e3c;
   color:white;
   cursor:pointer;
-  font-weight:bold;
-  transition:.3s;
 }
-
-button:hover{
-  transform:translateY(-2px);
-}
-
 input,select{
   width:100%;
-  padding:14px;
+  padding:12px;
   margin:8px 0;
-  border-radius:14px;
-  border:1px solid #e8d3b9;
-  background:#fffaf3;
+  border-radius:10px;
 }
-
 img{
   width:100%;
   height:180px;
   object-fit:cover;
-  border-radius:16px;
-}
-
-#cartBox p{
-  padding:10px;
-  background:#fff7eb;
   border-radius:10px;
-  margin:6px 0;
-}
-
-#total{
-  color:#8b5e3c;
 }
 </style>
 </head>
-
 <body>
-<div class="overlay">
+
 <div class="container">
 
 <h1>🍽️ Warung Nusantara</h1>
@@ -121,22 +72,224 @@ img{
 <h2>Menu</h2>
 <div id="menuList" class="grid"></div>
 
-<h2>🛒 Pesanan</h2>
+<h2>Pesanan</h2>
 <input id="nama" placeholder="Nama Customer">
 <input id="phone" placeholder="Nomor HP">
 <select id="meja"></select>
 
 <div class="card">
-  <h3>Keranjang</h3>
-  <div id="cartBox">Kosong</div>
-  <h3 id="total">Total Rp 0</h3>
-  <button onclick="checkout()">Kirim Pesanan</button>
+<h3>Keranjang</h3>
+<div id="cartBox">Kosong</div>
+<h3 id="total">Total Rp 0</h3>
+<button onclick="checkout()">Kirim Pesanan</button>
 </div>
 
-<h2>📦 Data Pesanan</h2>
+<h2>Data Pesanan</h2>
 <div id="ordersList"></div>
-  </script>
+
 </div>
-</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getFirestore,
+ collection,
+ getDocs,
+ addDoc,
+ serverTimestamp,
+ onSnapshot,
+ query,
+ where,
+ doc,
+ updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
+ authDomain: "warung-nusantara-9f331.firebaseapp.com",
+ projectId: "warung-nusantara-9f331",
+ storageBucket: "warung-nusantara-9f331.firebasestorage.app",
+ messagingSenderId: "68513276988",
+ appId: "1:68513276988:web:b13b148a51ce216efecf39"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let restaurantId="";
+let restaurants={};
+let cart=[];
+let unsubscribe=null;
+
+function loadMeja(){
+ let html='<option value="">Pilih Meja</option>';
+ for(let i=1;i<=20;i++){
+   html += `<option value="${i}">Meja ${i}</option>`;
+ }
+ document.getElementById("meja").innerHTML=html;
+}
+loadMeja();
+
+async function loadRestaurant(){
+ const snap = await getDocs(collection(db,"restaurants"));
+ let html="";
+
+ snap.forEach(docSnap=>{
+   restaurants[docSnap.id]=docSnap.data();
+   html += `<option value="${docSnap.id}">${docSnap.data().name}</option>`;
+ });
+
+ document.getElementById("restoSelect").innerHTML=html;
+ restaurantId=Object.keys(restaurants)[0];
+
+ showRestaurant();
+ loadMenu();
+ loadOrders();
+}
+loadRestaurant();
+
+document.getElementById("restoSelect").addEventListener("change",(e)=>{
+ restaurantId=e.target.value;
+ showRestaurant();
+ loadMenu();
+ loadOrders();
+});
+
+function showRestaurant(){
+ let r=restaurants[restaurantId];
+ if(!r) return;
+
+ document.getElementById("restoInfo").innerHTML=`
+   <h2>${r.name}</h2>
+   <p>${r.address}</p>
+   <p>${r.openHours}</p>
+ `;
+}
+
+async function loadMenu(){
+ const snap=await getDocs(collection(db,"restaurants",restaurantId,"menus"));
+ let html="";
+
+ snap.forEach(docSnap=>{
+   let m=docSnap.data();
+
+   html += `
+   <div class="card">
+     <img src="${m.imageUrl}">
+     <h3>${m.name}</h3>
+     <p>${m.category}</p>
+     <p>Rp ${m.price.toLocaleString("id-ID")}</p>
+     <button onclick="tambah('${m.name}',${m.price})">+ Pesan</button>
+   </div>`;
+ });
+
+ document.getElementById("menuList").innerHTML=html;
+}
+
+window.tambah=(name,price)=>{
+ cart.push({name,price});
+ renderCart();
+}
+
+function renderCart(){
+ let html="";
+ let total=0;
+
+ cart.forEach(item=>{
+   html += `<p>${item.name} - Rp ${item.price}</p>`;
+   total += item.price;
+ });
+
+ document.getElementById("cartBox").innerHTML=html || "Kosong";
+ document.getElementById("total").innerHTML="Total Rp "+total.toLocaleString("id-ID");
+}
+
+window.checkout=async()=>{
+ if(cart.length===0){
+   alert("Pilih menu dulu");
+   return;
+ }
+
+ let nama=document.getElementById("nama").value;
+ let phone=document.getElementById("phone").value;
+ let meja=document.getElementById("meja").value;
+
+ if(!nama || !phone || !meja){
+   alert("Lengkapi data");
+   return;
+ }
+
+ let total=cart.reduce((a,b)=>a+b.price,0);
+
+ try{
+   const customerRef=await addDoc(collection(db,"customers"),{
+     name:nama,
+     phone:phone,
+     loyaltyPoints:0
+   });
+
+   const orderRef=await addDoc(collection(db,"orders"),{
+     customerId:customerRef.id,
+     restaurantId:restaurantId,
+     tableNumber:Number(meja),
+     status:"pending",
+     totalPrice:total,
+     createdAt:serverTimestamp()
+   });
+
+   for(let item of cart){
+     await addDoc(collection(db,"orders",orderRef.id,"orderItems"),{
+       menuId:item.name,
+       menuName:item.name,
+       qty:1,
+       unitPrice:item.price,
+       subtotal:item.price
+     });
+   }
+
+   alert("Pesanan berhasil");
+   cart=[];
+   renderCart();
+
+ }catch(err){
+   alert(err.message);
+ }
+}
+
+window.updateStatus=async(id,status)=>{
+ await updateDoc(doc(db,"orders",id),{status});
+}
+
+function loadOrders(){
+ if(unsubscribe) unsubscribe();
+
+ const q=query(collection(db,"orders"),where("restaurantId","==",restaurantId));
+
+ unsubscribe=onSnapshot(q,(snapshot)=>{
+   let html="";
+
+   snapshot.forEach(docSnap=>{
+     let o=docSnap.data();
+
+     html += `
+     <div class="card">
+       <p>Customer ID: ${o.customerId}</p>
+       <p>Meja: ${o.tableNumber}</p>
+       <p>Total: Rp ${o.totalPrice}</p>
+
+       <select onchange="updateStatus('${docSnap.id}',this.value)">
+         <option value="pending" ${o.status=="pending"?"selected":""}>Pending</option>
+         <option value="cooking" ${o.status=="cooking"?"selected":""}>Dimasak</option>
+         <option value="done" ${o.status=="done"?"selected":""}>Selesai</option>
+       </select>
+     </div>`;
+   });
+
+   document.getElementById("ordersList").innerHTML=html || "Belum ada pesanan";
+ });
+}
+</script>
+
 </body>
 </html>
