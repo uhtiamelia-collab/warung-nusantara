@@ -68,6 +68,7 @@ input,select{
 
 <input id="nama" placeholder="Nama Customer">
 <input id="phone" placeholder="No HP">
+
 <select id="meja"></select>
 
 <div class="card">
@@ -93,10 +94,11 @@ addDoc,
 onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 GANTI INI PAKAI PUNYAMU */
 const firebaseConfig = {
-apiKey: "XXX",
-authDomain: "XXX",
-projectId: "XXX"
+apiKey: "ISI_API_KEY_KAMU",
+authDomain: "ISI_AUTH_DOMAIN_KAMU",
+projectId: "ISI_PROJECT_ID_KAMU"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -106,7 +108,6 @@ let cart=[];
 
 /* ================= MENU ================= */
 async function loadMenu(){
-
   const snap = await getDocs(collection(db,"menus"));
 
   let html="";
@@ -123,7 +124,7 @@ async function loadMenu(){
     `;
   });
 
-  document.getElementById("menuList").innerHTML = html;
+  document.getElementById("menuList").innerHTML = html || "Menu kosong";
 }
 
 window.add = (name,price)=>{
@@ -131,6 +132,7 @@ window.add = (name,price)=>{
   renderCart();
 }
 
+/* ================= CART ================= */
 function renderCart(){
   let html="";
   let total=0;
@@ -149,24 +151,22 @@ window.checkout = async ()=>{
 
   let nama = document.getElementById("nama").value;
   let phone = document.getElementById("phone").value;
-  let meja = document.getElementById("meja").value;
 
   if(cart.length===0) return alert("Keranjang kosong");
   if(!nama) return alert("Isi nama");
 
   let total = cart.reduce((a,b)=>a+b.price,0);
 
-  // 🔥 SIMPAN ORDER
+  /* 🔥 ORDER */
   await addDoc(collection(db,"orders"),{
     customerName:nama,
     phone:phone,
-    tableNumber:meja,
     status:"Pending",
     totalPrice:total,
     createdAt:new Date()
   });
 
-  // 🔥 SIMPAN CUSTOMER (INI YANG KAMU MAU)
+  /* 🔥 CUSTOMER */
   await addDoc(collection(db,"customers"),{
     name:nama,
     phone:phone,
@@ -177,7 +177,7 @@ window.checkout = async ()=>{
   cart=[];
   renderCart();
 
-  alert("Pesanan & Customer tersimpan ✔");
+  alert("Pesanan berhasil ✔");
 };
 
 /* ================= ORDERS REALTIME ================= */
@@ -193,7 +193,6 @@ function loadOrders(){
       html += `
         <div class="card">
           <b>${o.customerName}</b><br>
-          Meja: ${o.tableNumber}<br>
           Status: ${o.status}<br>
           Total: Rp ${o.totalPrice}
         </div>
@@ -205,18 +204,7 @@ function loadOrders(){
   });
 }
 
-/* ================= MEJA ================= */
-function loadMeja(){
-  let html="<option value=''>Pilih Meja</option>";
-
-  for(let i=1;i<=10;i++){
-    html += `<option value="${i}">Meja ${i}</option>`;
-  }
-
-  document.getElementById("meja").innerHTML=html;
-}
-
-loadMeja();
+/* ================= INIT ================= */
 loadMenu();
 loadOrders();
 
