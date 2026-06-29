@@ -162,571 +162,21 @@ img{
 </div>
 </div>
 
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-
-import {
-getFirestore,
-collection,
-getDocs,
-addDoc,
-serverTimestamp,
-onSnapshot,
-doc,
-updateDoc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
-  authDomain: "warung-nusantara-9f331.firebaseapp.com",
-  projectId: "warung-nusantara-9f331",
-  storageBucket: "warung-nusantara-9f331.firebasestorage.app",
-  messagingSenderId: "68513276988",
-  appId: "1:68513276988:web:b13b148a51ce216efecf39"
-};
-
-
-const app = initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
-
-
-
-let restaurantId="jombang01";
-
-let restaurants={};
-
-let cart=[];
-
-let stopOrder=null;
-
-
-
-const restoSelect=document.getElementById("restoSelect");
-const restoInfo=document.getElementById("restoInfo");
-const menuList=document.getElementById("menuList");
-const cartBox=document.getElementById("cartBox");
-const totalBox=document.getElementById("total");
-const ordersList=document.getElementById("ordersList");
-
-
-
-
-// =====================
-// NOMOR MEJA
-// =====================
-
-function loadMeja(){
-
-let html=`<option value="">
-Pilih Meja
-</option>`;
-
-
-for(let i=1;i<=50;i++){
-
-html+=`
-
-<option value="${i}">
-Meja ${i}
-</option>
-
-`;
-
-}
-
-
-document.getElementById("meja").innerHTML=html;
-
-}
-
-
-loadMeja();
-
-
-
-
-
-// =====================
-// LOAD RESTORAN
-// =====================
-
-
-async function loadRestaurant(){
-
-
-const snap =
-await getDocs(
-collection(db,"restaurants")
-);
-
-
-
-let html="";
-
-
-snap.forEach(d=>{
-
-
-restaurants[d.id]=d.data();
-
-
-
-html+=`
-
-<option value="${d.id}">
-${d.data().name}
-</option>
-
-`;
-
-});
-
-
-
-restoSelect.innerHTML=html;
-
-
-
-if(restaurants["jombang01"]){
-
-restaurantId="jombang01";
-
-restoSelect.value="jombang01";
-
-}
-
-
-
-showResto();
-
-loadMenu();
-
-loadOrders();
-
-
-
-}
-
-
-
-loadRestaurant();
-
-
-
-
-
-
-// =====================
-// GANTI CABANG
-// =====================
-
-
-restoSelect.onchange=function(){
-
-
-restaurantId=this.value;
-
-
-cart=[];
-
-renderCart();
-
-
-showResto();
-
-
-loadMenu();
-
-
-loadOrders();
-
-
-}
-
-
-
-
-
-
-
-// =====================
-// INFO RESTO
-// =====================
-
-
-function showResto(){
-
-
-let r=restaurants[restaurantId];
-
-
-if(!r)return;
-
-
-
-restoInfo.innerHTML=`
-
-<h2>
-🍽️ ${r.name}
-</h2>
-
-
-<p>
-📍 ${r.address || "-"}
-</p>
-
-
-<p>
-🕒 ${r.openHours || "08.00 - 22.00"}
-</p>
-
-`;
-
-
-
-document.getElementById("alamat").innerHTML=
-"Alamat : "+(r.address || "-");
-
-
-}
-
-
-
-
-
-
-
-
-// =====================
-// MENU
-// =====================
-
-
-
-async function loadMenu(){
-
-
-
-menuList.innerHTML="Loading menu...";
-
-
-
-const snap =
-await getDocs(
-
-collection(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"menus"
-
-)
-
-);
-
-
-
-let html="";
-
-
-
-snap.forEach(d=>{
-
-
-let m=d.data();
-
-
-
-let harga=
-Number(m.price || 0);
-
-
-
-html+=`
-
-<div class="card">
-
-
-<img src="${m.imageUrl || 
-'https://via.placeholder.com/300'}">
-
-
-<h3>
-${m.name}
-</h3>
-
-
-<p>
-${m.category || ""}
-</p>
-
-
-<p>
-Rp ${harga.toLocaleString("id-ID")}
-</p>
-
-
-<button onclick="tambah('${m.name}',${harga})">
-
-+ Pesan
-
-</button>
-
-
-</div>
-
-`;
-
-
-
-});
-
-
-
-menuList.innerHTML =
-html || "Menu kosong";
-
-
-}
-
-
-
-
-
-
-
-
-// =====================
-// CART
-// =====================
-
-
-window.tambah=function(nama,harga){
-
-
-cart.push({
-
-name:nama,
-
-price:harga
-
-});
-
-
-renderCart();
-
-
-}
-
-
-
-function renderCart(){
-
-
-let html="";
-
-let total=0;
-
-
-
-cart.forEach(i=>{
-
-
-html+=`
-
-<p>
-
-${i.name}
-
-Rp ${i.price.toLocaleString("id-ID")}
-
-</p>
-
-`;
-
-
-total+=i.price;
-
-
-});
-
-
-
-cartBox.innerHTML =
-html || "Kosong";
-
-
-totalBox.innerHTML =
-"Total Rp "+total.toLocaleString("id-ID");
-
-
-}
-
-
-
-
-
-
-
-
-// =====================
-// CHECKOUT
-// =====================
-
-
-
-window.checkout=async function(){
-
-
-
-let nama=
-document.getElementById("nama").value;
-
-
-let phone=
-document.getElementById("phone").value;
-
-
-let meja=
-document.getElementById("meja").value;
-
-
-
-if(cart.length==0){
-
-alert("Pilih menu dulu");
-
-return;
-
-}
-
-
-
-if(!nama || !meja){
-
-alert("Isi data");
-
-return;
-
-}
-
-
-
-let total =
-cart.reduce(
-(a,b)=>a+b.price,0
-);
-
-
-
-
-await addDoc(
-
-collection(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"orders"
-
-),
-
-{
-
-
-customerName:nama,
-
-phone:phone,
-
-tableNumber:meja,
-
-
-items:cart,
-
-
-totalPrice:total,
-
-
-status:"Pending",
-
-
-createdAt:serverTimestamp()
-
-
-}
-
-
-);
-
-
-
-
-alert(
-"Pesanan masuk ke "+
-restaurants[restaurantId].name
-);
-
-
-
-cart=[];
-
-renderCart();
-
-
-}
-
-
-
-
-
-
-
-
-
-// =====================
-// REALTIME ORDER CABANG
-// =====================
-
-
 function loadOrders(){
 
 
-
 if(stopOrder){
-
 stopOrder();
-
 }
-
 
 
 stopOrder = onSnapshot(
 
-
 collection(
-
 db,
-
 "restaurants",
-
 restaurantId,
-
 "orders"
-
 ),
 
 
@@ -736,18 +186,16 @@ restaurantId,
 let html="";
 
 
-
-snapshot.forEach(d=>{
-
-
-let o=d.data();
+snapshot.forEach((doc)=>{
 
 
+let o = doc.data();
 
-html+=`
+
+
+html += `
 
 <div class="card">
-
 
 <h3>
 👤 ${o.customerName}
@@ -760,46 +208,35 @@ html+=`
 
 
 <p>
-🪑 Meja ${o.tableNumber}
+🪑 Meja : ${o.tableNumber}
 </p>
 
 
-
-<h3>
+<p>
+🍽️ Total :
 
 Rp ${Number(o.totalPrice)
 .toLocaleString("id-ID")}
 
-</h3>
+</p>
 
 
 
-<select onchange="ubahStatus('${d.id}',this.value)">
+<p>
+Status :
 
+<b>
+${o.status}
+</b>
 
-<option ${o.status=="Pending"?"selected":""}>
-Pending
-</option>
+</p>
 
-
-<option ${o.status=="Masak"?"selected":""}>
-Masak
-</option>
-
-
-<option ${o.status=="Selesai"?"selected":""}>
-Selesai
-</option>
-
-
-</select>
 
 
 </div>
 
 
 `;
-
 
 
 });
@@ -810,56 +247,12 @@ ordersList.innerHTML =
 html || "Belum ada pesanan";
 
 
-
 }
 
 
 );
 
 
-
 }
-
-
-
-
-
-
-
-
-window.ubahStatus=async function(id,status){
-
-
-await updateDoc(
-
-doc(
-
-db,
-
-"restaurants",
-
-restaurantId,
-
-"orders",
-
-id
-
-),
-
-
-{
-
-status:status
-
-}
-
-);
-
-
-}
-
-
-
-</script>
 </body>
 </html>
