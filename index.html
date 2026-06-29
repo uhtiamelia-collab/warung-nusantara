@@ -6,22 +6,31 @@
 <title>Warung Nusantara</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Segoe UI;
-  background:#111;
-  color:white;
+*{
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
 }
 
-/* HEADER */
-.header{
+body{
+  margin:0;
+  background:url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1200') center/cover fixed;
+}
+
+/* HEADER AREA */
+h1{
   text-align:center;
-  padding:20px 10px;
+  color:#ffe7b0;
+  text-shadow:0 0 10px rgba(255,200,120,.4);
+  margin-top:20px;
 }
 
 .subtitle{
+  text-align:center;
+  margin-top:-10px;
+  margin-bottom:10px;
   color:#ffe7b0;
   font-size:14px;
+  letter-spacing:1px;
   opacity:0.9;
 }
 
@@ -32,80 +41,118 @@ body{
   margin:6px auto;
   display:block;
   width:fit-content;
+  color:#fff;
   font-size:13px;
   backdrop-filter: blur(6px);
+  box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
-/* CONTAINER */
+.overlay{
+  background:rgba(0,0,0,.65);
+  min-height:100vh;
+  padding:25px;
+}
+
 .container{
-  padding:20px;
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+  color:white;
+}
+
+h2{
+  text-align:center;
+  color:#ffdca8;
 }
 
 .card{
-  background:white;
-  color:black;
-  padding:15px;
-  margin:10px 0;
-  border-radius:10px;
+  background:rgba(255,248,235,.96);
+  color:#2b1e14;
+  padding:18px;
+  margin:15px 0;
+  border-radius:18px;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:10px;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:18px;
 }
 
 button{
   width:100%;
-  padding:10px;
+  padding:12px;
+  border:none;
+  border-radius:12px;
   background:#8b5e3c;
   color:white;
-  border:none;
-  border-radius:8px;
+  font-weight:bold;
   cursor:pointer;
+}
+
+button:hover{
+  background:#a06b44;
 }
 
 input,select{
   width:100%;
-  padding:10px;
-  margin:5px 0;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+
+img{
+  width:100%;
+  height:170px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.status{
+  font-weight:bold;
+  color:#8b5e3c;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER RAPI -->
-<div class="header">
-  <h1>🍽️ Warung Nusantara</h1>
+<!-- HEADER ESTETIK -->
+<h1>🍽️ Warung Nusantara</h1>
 
-  <div class="subtitle">
-    ✨ Sistem pemesanan digital - realtime
-  </div>
-
-  <div class="info-badge">📍 Alamat: Loading...</div>
-  <div class="info-badge">🕒 Buka: 08.00 - 22.00 WIB</div>
+<div class="subtitle">
+  ✨ Sistem pemesanan digital - realtime
 </div>
 
-<!-- CONTENT -->
+<div class="info-badge">
+  🔔 <span id="alamat">Alamat: Loading...</span>
+</div>
+
+<div class="info-badge">
+  🕒 Buka: 08.00 - 22.00 WIB
+</div>
+
+<div class="overlay">
 <div class="container">
 
 <h2>Restoran</h2>
-<div id="restoInfo" class="card">Loading...</div>
+<select id="restoSelect"></select>
+
+<div id="restoInfo" class="card"></div>
 
 <h2>Menu</h2>
 <div id="menuList" class="grid"></div>
 
 <h2>Pesanan</h2>
-
-<input id="nama" placeholder="Nama Customer">
+<input id="nama" placeholder="Nama Pelanggan">
 <input id="phone" placeholder="No HP">
 <select id="meja"></select>
 
 <div class="card">
 <h3>Keranjang</h3>
 <div id="cartBox">Kosong</div>
-<h3 id="total">Rp 0</h3>
+<h3 id="total">Total Rp 0</h3>
 <button onclick="checkout()">Kirim Pesanan</button>
 </div>
 
@@ -113,6 +160,703 @@ input,select{
 <div id="ordersList"></div>
 
 </div>
+</div>
 
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs,
+addDoc,
+serverTimestamp,
+onSnapshot,
+doc,
+updateDoc
+}
+from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyD-m7sqOLaZ8-bWLZeGVPTXT-Qp1vQIycQ",
+
+authDomain:"warung-nusantara-9f331.firebaseapp.com",
+
+projectId:"warung-nusantara-9f331",
+
+storageBucket:"warung-nusantara-9f331.firebasestorage.app",
+
+messagingSenderId:"68513276988",
+
+appId:"1:68513276988:web:b13b148a51ce216efecf39"
+
+};
+
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+
+let restaurantId="jombang01";
+
+let restaurants={};
+
+let cart=[];
+
+let stopOrder=null;
+
+
+
+const restoSelect =
+document.getElementById("restoSelect");
+
+const restoInfo =
+document.getElementById("restoInfo");
+
+const menuList =
+document.getElementById("menuList");
+
+const cartBox =
+document.getElementById("cartBox");
+
+const totalBox =
+document.getElementById("total");
+
+const ordersList =
+document.getElementById("ordersList");
+
+const nama =
+document.getElementById("nama");
+
+const phone =
+document.getElementById("phone");
+
+const meja =
+document.getElementById("meja");
+
+const pesanStatus =
+document.getElementById("pesanStatus");
+
+
+
+
+// =======================
+// LOAD RESTORAN
+// =======================
+
+
+async function loadRestaurant(){
+
+
+try{
+
+
+const snap =
+await getDocs(
+collection(db,"restaurants")
+);
+
+
+
+let html="";
+
+
+
+if(snap.empty){
+
+restoInfo.innerHTML=
+"Data restoran kosong";
+
+return;
+
+}
+
+
+
+snap.forEach((doc)=>{
+
+
+let data=doc.data();
+
+
+restaurants[doc.id]=data;
+
+
+
+html += `
+
+<option value="${doc.id}">
+${data.name}
+</option>
+
+`;
+
+
+
+});
+
+
+
+restoSelect.innerHTML=html;
+
+
+
+if(restaurants["jombang01"]){
+
+restaurantId="jombang01";
+
+restoSelect.value="jombang01";
+
+}
+
+
+
+showRestaurant();
+
+loadMenu();
+
+loadOrders();
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+restoInfo.innerHTML=
+"Firebase gagal koneksi";
+
+
+}
+
+
+}
+
+
+
+loadRestaurant();
+
+
+
+
+
+
+// =======================
+// GANTI RESTORAN
+// =======================
+
+
+window.gantiRestoran=function(){
+
+
+restaurantId =
+restoSelect.value;
+
+
+cart=[];
+
+
+renderCart();
+
+
+showRestaurant();
+
+
+loadMenu();
+
+
+loadOrders();
+
+
+}
+
+
+
+
+
+// =======================
+// INFO
+// =======================
+
+
+function showRestaurant(){
+
+
+let r =
+restaurants[restaurantId];
+
+
+if(!r)return;
+
+
+
+restoInfo.innerHTML=`
+
+<h2>
+🍽️ ${r.name}
+</h2>
+
+
+<p>
+📍 ${r.address ?? "-"}
+</p>
+
+
+<p>
+🕒 ${r.openHour ?? "08.00 - 22.00 WIB"}
+</p>
+
+
+<p>
+Status :
+${r.status ?? "Buka"}
+</p>
+
+
+`;
+
+
+
+}
+
+
+
+
+
+// =======================
+// MENU
+// =======================
+
+
+async function loadMenu(){
+
+
+menuList.innerHTML="";
+
+
+
+const snap =
+await getDocs(
+
+collection(
+db,
+"restaurants",
+restaurantId,
+"menus"
+
+)
+
+);
+
+
+
+let html="";
+
+
+
+snap.forEach((doc)=>{
+
+
+let m=doc.data();
+
+
+
+let harga =
+Number(m.price ?? 0);
+
+
+
+html += `
+
+
+<div class="card">
+
+
+<img src="${m.imageUrl ?? 'https://via.placeholder.com/300'}">
+
+
+<h3>
+${m.name}
+</h3>
+
+
+<p>
+Rp ${harga.toLocaleString("id-ID")}
+</p>
+
+
+<button 
+onclick='tambah(${JSON.stringify(m.name)},${harga})'>
+
++ Pesan
+
+</button>
+
+
+
+</div>
+
+
+
+`;
+
+
+
+});
+
+
+
+menuList.innerHTML =
+html || "Menu belum tersedia";
+
+
+}
+
+
+
+
+
+
+// =======================
+// CART
+// =======================
+
+
+window.tambah=function(nama,harga){
+
+
+cart.push({
+
+name:nama,
+
+price:harga
+
+});
+
+
+renderCart();
+
+
+}
+
+
+
+
+function renderCart(){
+
+
+let html="";
+
+let total=0;
+
+
+
+cart.forEach(item=>{
+
+
+html += `
+
+<p>
+${item.name}
+Rp ${item.price.toLocaleString("id-ID")}
+</p>
+
+`;
+
+
+total+=item.price;
+
+
+});
+
+
+
+cartBox.innerHTML =
+html || "Kosong";
+
+
+totalBox.innerHTML =
+"Rp "+total.toLocaleString("id-ID");
+
+
+}
+
+
+
+
+
+
+
+// =======================
+// CHECKOUT
+// =======================
+
+
+window.checkout=async function(){
+
+
+
+if(cart.length==0){
+
+alert("Pilih menu dulu");
+
+return;
+
+}
+
+
+
+if(!nama.value ||
+!phone.value ||
+!meja.value){
+
+alert("Lengkapi data");
+
+return;
+
+}
+
+
+
+let total =
+cart.reduce(
+(a,b)=>a+b.price,
+0
+);
+
+
+
+await addDoc(
+
+
+collection(
+db,
+"restaurants",
+restaurantId,
+"orders"
+),
+
+
+{
+
+
+restaurantId,
+
+
+restaurantName:
+restaurants[restaurantId].name,
+
+
+customerName:nama.value,
+
+
+phone:phone.value,
+
+
+tableNumber:meja.value,
+
+
+items:cart,
+
+
+totalPrice:total,
+
+
+status:"Pending",
+
+
+createdAt:serverTimestamp()
+
+
+}
+
+
+
+);
+
+
+
+cart=[];
+
+
+renderCart();
+
+
+pesanStatus.innerHTML=
+"✅ Pesanan berhasil";
+
+
+
+}
+
+
+
+
+
+
+// =======================
+// ORDERS REALTIME
+// =======================
+
+
+function loadOrders(){
+
+
+
+if(stopOrder){
+
+stopOrder();
+
+}
+
+
+
+stopOrder =
+onSnapshot(
+
+
+collection(
+db,
+"restaurants",
+restaurantId,
+"orders"
+),
+
+
+(snapshot)=>{
+
+
+let html="";
+
+
+
+snapshot.forEach((doc)=>{
+
+
+let o=doc.data();
+
+
+
+html += `
+
+<div class="card">
+
+
+<h3>
+👤 ${o.customerName}
+</h3>
+
+
+<p>
+Meja : ${o.tableNumber}
+</p>
+
+
+<p>
+Rp ${Number(o.totalPrice)
+.toLocaleString("id-ID")}
+</p>
+
+
+<select
+onchange="ubahStatus('${doc.id}',this.value)"
+>
+
+
+<option>
+Pending
+</option>
+
+
+<option>
+Diproses
+</option>
+
+
+<option>
+Selesai
+</option>
+
+
+</select>
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+ordersList.innerHTML =
+html || "Belum ada pesanan";
+
+
+
+}
+
+
+
+);
+
+
+
+}
+
+
+
+
+
+window.ubahStatus =
+async function(id,status){
+
+
+
+await updateDoc(
+
+doc(
+db,
+"restaurants",
+restaurantId,
+"orders",
+id
+),
+
+
+{
+
+status
+
+}
+
+
+);
+
+
+
+}
+
+
+
+
+
+</script>
 </body>
 </html>
